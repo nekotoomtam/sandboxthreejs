@@ -97,3 +97,120 @@ input[type='range'] {
   background: #173f37;
   color: white;
 }
+
+.experience-shell {
+  position: relative;
+  width: 100vw;
+  min-height: 100svh;
+  overflow: hidden;
+  background: #123d34;
+  color: #f7fbf9;
+}
+
+.experience-canvas,
+.experience-canvas canvas,
+.experience-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.experience-canvas canvas { display: block; }
+.experience-overlay { pointer-events: none; transition: opacity 450ms ease; }
+.experience-overlay--entering,
+.experience-overlay--entered { opacity: 0; }
+.experience-overlay button { pointer-events: auto; }
+
+.experience-brand {
+  position: absolute;
+  top: clamp(1.25rem, 3vw, 2.25rem);
+  left: clamp(1.25rem, 3vw, 2.5rem);
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  font-weight: 850;
+  font-size: clamp(1.1rem, 2vw, 1.55rem);
+}
+
+.experience-brand__mark {
+  display: grid;
+  place-items: center;
+  width: 2.8rem;
+  aspect-ratio: 1;
+  border-radius: 0.8rem;
+  background: #f3a83b;
+  color: #123d34;
+}
+
+.experience-loading {
+  position: absolute;
+  left: clamp(1.5rem, 9vw, 8rem);
+  top: 50%;
+  width: min(34rem, calc(100vw - 3rem));
+  transform: translateY(-50%);
+}
+
+.experience-loading h1 {
+  max-width: 15ch;
+  margin: 0.6rem 0 1.5rem;
+  font-size: clamp(2rem, 5vw, 4.6rem);
+  line-height: 1.05;
+}
+
+.experience-eyebrow {
+  color: #f3a83b;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.experience-loading progress {
+  width: min(28rem, 100%);
+  height: 0.55rem;
+  accent-color: #f3a83b;
+}
+
+.experience-ready {
+  position: absolute;
+  left: clamp(2rem, 12vw, 11rem);
+  bottom: clamp(6rem, 17vh, 11rem);
+}
+
+.experience-ready p {
+  margin: 0 0 0.25rem;
+  color: #f3a83b;
+  font-weight: 800;
+}
+
+.experience-start {
+  min-width: 9rem;
+  border: 0;
+  background: transparent;
+  color: #fff7e8;
+  font-size: clamp(2rem, 5vw, 4rem);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.experience-start:focus-visible {
+  outline: 3px solid #fff7e8;
+  outline-offset: 0.5rem;
+}
+
+.experience-credit {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 1rem;
+  margin: 0;
+  color: rgba(247, 251, 249, 0.72);
+  font-size: 0.78rem;
+}
+
+@media (max-width: 767px) {
+  .experience-loading { top: 45%; }
+  .experience-ready { left: 50%; transform: translateX(-50%); text-align: center; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .experience-overlay { transition-duration: 1ms; }
+}

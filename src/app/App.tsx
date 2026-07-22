@@ -1,10 +1,10 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { AppShell } from '../components/AppShell'
-import { HomePage } from '../pages/HomePage'
+import { ConceptsPage } from '../pages/ConceptsPage'
+import { ExperiencePage } from '../pages/ExperiencePage'
 import { LessonsPage } from '../pages/LessonsPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
-import { ConceptsPage } from '../pages/ConceptsPage'
 
 const LessonPage = lazy(() =>
   import('../pages/LessonPage').then((module) => ({ default: module.LessonPage })),
@@ -29,8 +29,8 @@ function RouteLoader() {
 export function App() {
   return (
     <Routes>
+      <Route index element={<ExperiencePage />} />
       <Route element={<AppShell />}>
-        <Route index element={<HomePage />} />
         <Route path="lessons" element={<LessonsPage />} />
         <Route path="concepts" element={<ConceptsPage />} />
         <Route

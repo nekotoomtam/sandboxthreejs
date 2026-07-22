@@ -1,8 +1,12 @@
 import { expect, test } from '@playwright/test'
 
 test('opens the first lesson and renders a Three.js canvas', async ({ page }) => {
-  await page.goto('/')
-  await page.getByRole('link', { name: /เริ่มบทแรก/ }).click()
+  await page.goto('/lessons')
+  await page
+    .getByRole('article')
+    .filter({ hasText: 'Hello, Three.js' })
+    .getByRole('link', { name: /เปิดบทเรียน/ })
+    .click()
 
   await expect(page.getByRole('heading', { level: 1, name: 'Hello, Three.js' })).toBeVisible()
   await expect(page.locator('[data-sandbox-canvas="true"]')).toHaveCount(1)
