@@ -10,7 +10,7 @@ import {
 export class ExperienceRuntime {
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
-  private readonly clock = new THREE.Clock()
+  private readonly timer = new THREE.Timer()
   private renderer?: THREE.WebGLRenderer
   private container?: HTMLElement
   private resizeObserver?: ResizeObserver
@@ -75,6 +75,7 @@ export class ExperienceRuntime {
 
     this.resizeObserver = new ResizeObserver(() => this.resize())
     this.resizeObserver.observe(container)
+    this.timer.connect(document)
     document.addEventListener('visibilitychange', this.handleVisibility)
     this.resize()
     this.tick()
@@ -106,6 +107,7 @@ export class ExperienceRuntime {
     this.disposed = true
     if (this.animationFrame !== undefined) cancelAnimationFrame(this.animationFrame)
     document.removeEventListener('visibilitychange', this.handleVisibility)
+    this.timer.dispose()
     this.resizeObserver?.disconnect()
     this.mona?.dispose()
     this.scene.traverse((object) => {
@@ -133,9 +135,10 @@ export class ExperienceRuntime {
     this.startMarker?.scale.setScalar(composition.markerScale)
   }
 
-  private tick = () => {
+  private tick = (timestamp?: DOMHighResTimeStamp) => {
     if (this.disposed) return
-    const delta = this.clock.getDelta()
+    this.timer.update(timestamp)
+    const delta = this.timer.getDelta()
     if (!this.hidden) {
       this.mona?.update(delta)
       this.renderer?.render(this.scene, this.camera)
@@ -145,7 +148,6 @@ export class ExperienceRuntime {
 
   private handleVisibility = () => {
     this.hidden = document.hidden
-    this.clock.getDelta()
   }
 
   private updateMarkerVisibility(): void {

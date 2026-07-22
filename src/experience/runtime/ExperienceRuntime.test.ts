@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import type { VRM } from '@pixiv/three-vrm'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import * as THREE from 'three'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExperienceRuntime } from './ExperienceRuntime'
 
 const loaderSpies = vi.hoisted(() => ({
@@ -41,6 +42,11 @@ describe('ExperienceRuntime', () => {
     })
   })
 
+  afterEach(() => {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
   it('disposes a Mona controller that resolves after runtime disposal without attaching it', async () => {
     let resolveVrm!: (vrm: VRM) => void
     loaderSpies.loadMonaAsset.mockReturnValueOnce(
@@ -58,5 +64,20 @@ describe('ExperienceRuntime', () => {
     expect(controllerSpies.constructor).toHaveBeenCalledOnce()
     expect(controllerSpies.instances[0].dispose).toHaveBeenCalledOnce()
     expect(controllerSpies.instances[0].attachTo).not.toHaveBeenCalled()
+  })
+
+  it('updates the frame timer before reading its delta', () => {
+    const updateTimer = vi.spyOn(THREE.Timer.prototype, 'update')
+    const readDelta = vi.spyOn(THREE.Timer.prototype, 'getDelta').mockReturnValue(0.016)
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    const runtime = new ExperienceRuntime()
+
+    ;(runtime as unknown as { tick: (timestamp: number) => void }).tick(250)
+
+    expect(updateTimer).toHaveBeenCalledWith(250)
+    expect(updateTimer.mock.invocationCallOrder[0])
+      .toBeLessThan(readDelta.mock.invocationCallOrder[0])
+    runtime.dispose()
   })
 })
