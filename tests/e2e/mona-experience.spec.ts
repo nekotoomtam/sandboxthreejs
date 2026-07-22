@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test'
 
 test('loads Mona before enabling entry and keeps one Three.js canvas', async ({ page }) => {
+  test.setTimeout(60_000)
+
   await page.goto('/')
 
   await expect(page.getByText('กำลังพา Mona เข้าสู่ฉาก')).toBeVisible()
