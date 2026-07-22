@@ -8,7 +8,7 @@ describe('MonaController', () => {
     vi.restoreAllMocks()
   })
 
-  it('places Mona at a distance and lowers her arms', () => {
+  it('places Mona at a distance, back-facing, and lowers her arms', () => {
     const bones = new Map([
       ['leftUpperArm', new THREE.Object3D()],
       ['rightUpperArm', new THREE.Object3D()],
@@ -28,12 +28,39 @@ describe('MonaController', () => {
     controller.applyInitialPose()
 
     expect(vrm.scene.position.toArray()).toEqual([1.8, 0, -4])
-    expect(vrm.scene.rotation.y).toBeCloseTo(THREE.MathUtils.degToRad(-55))
+    expect(vrm.scene.rotation.y).toBeCloseTo(Math.PI)
     expect(bones.get('leftUpperArm')?.rotation.z).toBeCloseTo(THREE.MathUtils.degToRad(-68))
     expect(bones.get('rightUpperArm')?.rotation.z).toBeCloseTo(THREE.MathUtils.degToRad(68))
     expect(bones.get('leftLowerArm')?.rotation.z).toBeCloseTo(THREE.MathUtils.degToRad(-8))
     expect(bones.get('rightLowerArm')?.rotation.z).toBeCloseTo(THREE.MathUtils.degToRad(8))
     expect(humanoidUpdate).toHaveBeenCalledOnce()
+  })
+
+  it('moves Mona to a semantic composition position', () => {
+    const vrm = {
+      scene: new THREE.Group(),
+      humanoid: { getNormalizedBoneNode: vi.fn(), update: vi.fn() },
+    } as unknown as VRM
+    const controller = new MonaController(vrm)
+
+    controller.setCompositionPosition([2.1, 0.05, -5])
+
+    expect(vrm.scene.position.toArray()).toEqual([2.1, 0.05, -5])
+  })
+
+  it('turns Mona from back-facing to front-facing using normalized progress', () => {
+    const vrm = {
+      scene: new THREE.Group(),
+      humanoid: { getNormalizedBoneNode: vi.fn(), update: vi.fn() },
+    } as unknown as VRM
+    const controller = new MonaController(vrm)
+    controller.applyInitialPose()
+
+    controller.applyEntrySample({ turnProgress: 0.5 })
+    expect(vrm.scene.rotation.y).toBeCloseTo(Math.PI / 2)
+
+    controller.applyEntrySample({ turnProgress: 1 })
+    expect(vrm.scene.rotation.y).toBeCloseTo(0)
   })
 
   it('optimizes and attaches Mona to the scene', () => {
@@ -68,13 +95,22 @@ describe('MonaController', () => {
       .toBeLessThan(springReset.mock.invocationCallOrder[0])
   })
 
-  it('forwards animation deltas to the VRM', () => {
+  it('updates the procedural pose before forwarding animation deltas to the VRM', () => {
+    const humanoidUpdate = vi.fn()
     const update = vi.fn()
-    const vrm = { update } as unknown as VRM
+    const vrm = {
+      humanoid: {
+        getNormalizedBoneNode: vi.fn(),
+        update: humanoidUpdate,
+      },
+      update,
+    } as unknown as VRM
 
     new MonaController(vrm).update(0.25)
 
     expect(update).toHaveBeenCalledWith(0.25)
+    expect(humanoidUpdate.mock.invocationCallOrder[0])
+      .toBeLessThan(update.mock.invocationCallOrder[0])
   })
 
   it('removes Mona and deeply disposes her scene', () => {
