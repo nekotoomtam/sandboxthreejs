@@ -18,6 +18,8 @@ export function ExperienceCanvas({
 }: ExperienceCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<ExperienceRuntime>(null)
+  const enteredRef = useRef(entered)
+  enteredRef.current = entered
 
   useEffect(() => {
     const container = containerRef.current
@@ -27,8 +29,11 @@ export function ExperienceCanvas({
 
     try {
       runtime.mount(container)
+      runtime.setEntered(enteredRef.current)
       runtimeRef.current = runtime
-      runtime.load('/models/mona/Mona.vrm', onProgress).then(
+      runtime.load('/models/mona/Mona.vrm', (progress) => {
+        if (active) onProgress(progress)
+      }).then(
         () => {
           if (active) onReady()
         },

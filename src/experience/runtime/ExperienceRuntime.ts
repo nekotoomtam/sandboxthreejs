@@ -72,9 +72,13 @@ export class ExperienceRuntime {
 
   async load(url: string, onProgress: (progress: number) => void): Promise<void> {
     const vrm = await loadMonaAsset(createVrmLoader(), url, onProgress)
-    if (this.disposed) return
+    const mona = new MonaController(vrm)
+    if (this.disposed) {
+      mona.dispose()
+      return
+    }
     this.mona?.dispose()
-    this.mona = new MonaController(vrm)
+    this.mona = mona
     this.mona.attachTo(this.scene)
     this.ready = true
     this.updateMarkerVisibility()

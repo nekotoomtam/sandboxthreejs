@@ -5,18 +5,31 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { ExperienceCanvas } from './ExperienceCanvas'
 
 const runtimeSpies = vi.hoisted(() => {
-  const runtime = {
-    mount: vi.fn(),
-    load: vi.fn(),
-    setEntered: vi.fn(),
-    dispose: vi.fn(),
+  const runtimes: Array<{
+    mount: ReturnType<typeof vi.fn>
+    load: ReturnType<typeof vi.fn>
+    setEntered: ReturnType<typeof vi.fn>
+    dispose: ReturnType<typeof vi.fn>
+  }> = []
+
+  const createRuntime = () => {
+    const runtime = {
+      mount: vi.fn(),
+      load: vi.fn().mockResolvedValue(undefined),
+      setEntered: vi.fn(),
+      dispose: vi.fn(),
+    }
+    runtime.mount.mockReturnValue(runtime)
+    runtimes.push(runtime)
+    return runtime
   }
-  runtime.mount.mockReturnValue(runtime)
+
   return {
     constructor: vi.fn(function ExperienceRuntimeMock() {
-      return runtime
+      return createRuntime()
     }),
-    runtime,
+    createRuntime,
+    runtimes,
   }
 })
 
@@ -27,8 +40,10 @@ vi.mock('./runtime/ExperienceRuntime', () => ({
 describe('ExperienceCanvas', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    runtimeSpies.runtime.mount.mockReturnValue(runtimeSpies.runtime)
-    runtimeSpies.runtime.load.mockResolvedValue(undefined)
+    runtimeSpies.runtimes.length = 0
+    runtimeSpies.constructor.mockImplementation(function ExperienceRuntimeMock() {
+      return runtimeSpies.createRuntime()
+    })
   })
 
   it('keeps one runtime mounted while entry state changes and disposes it on unmount', async () => {
@@ -43,23 +58,73 @@ describe('ExperienceCanvas', () => {
     )
 
     await waitFor(() => expect(onReady).toHaveBeenCalledOnce())
+    const runtime = runtimeSpies.runtimes[0]
     expect(runtimeSpies.constructor).toHaveBeenCalledOnce()
-    expect(runtimeSpies.runtime.load).toHaveBeenCalledWith(
+    expect(runtime.load).toHaveBeenCalledWith(
       '/models/mona/Mona.vrm',
-      callbacks.onProgress,
+      expect.any(Function),
     )
 
     rerender(<ExperienceCanvas attempt={0} entered {...callbacks} />)
     expect(runtimeSpies.constructor).toHaveBeenCalledOnce()
-    expect(runtimeSpies.runtime.setEntered).toHaveBeenLastCalledWith(true)
+    expect(runtime.setEntered).toHaveBeenLastCalledWith(true)
 
     unmount()
-    expect(runtimeSpies.runtime.dispose).toHaveBeenCalledOnce()
+    expect(runtime.dispose).toHaveBeenCalledOnce()
+  })
+
+  it('initializes a replacement runtime with the current entered state', async () => {
+    const callbacks = {
+      onProgress: vi.fn(),
+      onReady: vi.fn(),
+      onError: vi.fn(),
+    }
+    const { rerender } = render(
+      <ExperienceCanvas attempt={0} entered {...callbacks} />,
+    )
+    await waitFor(() => expect(callbacks.onReady).toHaveBeenCalledOnce())
+
+    rerender(<ExperienceCanvas attempt={1} entered {...callbacks} />)
+    await waitFor(() => expect(callbacks.onReady).toHaveBeenCalledTimes(2))
+
+    expect(runtimeSpies.runtimes).toHaveLength(2)
+    expect(runtimeSpies.runtimes[1].setEntered).toHaveBeenCalledWith(true)
+  })
+
+  it('stops forwarding progress after cleanup', () => {
+    let reportRuntimeProgress: ((progress: number) => void) | undefined
+    runtimeSpies.constructor.mockImplementationOnce(function ExperienceRuntimeMock() {
+      const runtime = runtimeSpies.createRuntime()
+      runtime.load.mockImplementation((_url, onProgress) => {
+        reportRuntimeProgress = onProgress as (progress: number) => void
+        return new Promise<void>(() => undefined)
+      })
+      return runtime
+    })
+    const onProgress = vi.fn()
+    const { unmount } = render(
+      <ExperienceCanvas
+        attempt={0}
+        entered={false}
+        onProgress={onProgress}
+        onReady={vi.fn()}
+        onError={vi.fn()}
+      />,
+    )
+
+    unmount()
+    reportRuntimeProgress?.(0.5)
+
+    expect(onProgress).not.toHaveBeenCalled()
   })
 
   it('reports synchronous WebGL initialization errors through the UI callback', async () => {
-    runtimeSpies.runtime.mount.mockImplementationOnce(() => {
-      throw new Error('WebGL unavailable')
+    runtimeSpies.constructor.mockImplementationOnce(function ExperienceRuntimeMock() {
+      const runtime = runtimeSpies.createRuntime()
+      runtime.mount.mockImplementationOnce(() => {
+        throw new Error('WebGL unavailable')
+      })
+      return runtime
     })
     const onError = vi.fn()
 
@@ -74,6 +139,6 @@ describe('ExperienceCanvas', () => {
     )
 
     await waitFor(() => expect(onError).toHaveBeenCalledWith('WebGL unavailable'))
-    expect(runtimeSpies.runtime.dispose).toHaveBeenCalledOnce()
+    expect(runtimeSpies.runtimes[0].dispose).toHaveBeenCalledOnce()
   })
 })
