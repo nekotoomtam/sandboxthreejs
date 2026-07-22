@@ -2,7 +2,7 @@
 import '@testing-library/jest-dom/vitest'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { useEffect, useRef } from 'react'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { ExperienceShell } from './ExperienceShell'
 import type { ExperienceCanvasProps } from './ExperienceCanvas'
 
@@ -13,7 +13,6 @@ const errorCanvasMountAttempts: number[] = []
 const errorCanvasUnmountAttempts: number[] = []
 
 afterEach(() => {
-  vi.useRealTimers()
   latestCanvasProps = undefined
   manualCanvasMountAttempts.length = 0
   manualCanvasUnmountAttempts.length = 0
@@ -54,34 +53,40 @@ function ErrorCanvas({ attempt, onError }: ExperienceCanvasProps) {
 }
 
 describe('ExperienceShell', () => {
-  it('keeps its canvas instance mounted through loading, ready, entering, and entered', () => {
-    vi.useFakeTimers()
-    render(<ExperienceShell CanvasComponent={ManualCanvas} entryDurationMs={400} />)
+  it('keeps its canvas mounted through reveal, approach, content reveal, and entry', () => {
+    render(<ExperienceShell CanvasComponent={ManualCanvas} />)
 
     expect(screen.getByText('กำลังพา Mona เข้าสู่ฉาก')).toBeVisible()
-    expect(screen.queryByRole('button', { name: 'เริ่ม' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /เริ่มประสบการณ์/ })).not.toBeInTheDocument()
     expect(manualCanvasMountAttempts).toEqual([0])
     expect(manualCanvasUnmountAttempts).toEqual([])
     act(() => latestCanvasProps?.onProgress(0.5))
     expect(screen.getByRole('progressbar')).toHaveValue(50)
-    expect(manualCanvasMountAttempts).toEqual([0])
-    expect(manualCanvasUnmountAttempts).toEqual([])
     act(() => latestCanvasProps?.onReady())
 
-    const start = screen.getByRole('button', { name: 'เริ่ม' })
+    expect(screen.getByRole('main')).toHaveAttribute('data-experience-phase', 'revealing')
+    expect(screen.queryByRole('button', { name: /เริ่มประสบการณ์/ })).not.toBeInTheDocument()
+    fireEvent.transitionEnd(screen.getByTestId('loader-surface'))
+
+    const start = screen.getByRole('button', { name: 'เริ่มประสบการณ์กับ Mona' })
     expect(screen.getByRole('main')).toHaveAttribute('data-experience-phase', 'ready')
     expect(manualCanvasMountAttempts).toEqual([0])
     expect(manualCanvasUnmountAttempts).toEqual([])
     fireEvent.click(start)
-    expect(screen.getByRole('main')).toHaveAttribute('data-experience-phase', 'entering')
+    expect(screen.getByRole('main')).toHaveAttribute('data-experience-phase', 'approaching')
+    expect(latestCanvasProps?.entryActive).toBe(true)
     expect(manualCanvasMountAttempts).toEqual([0])
     expect(manualCanvasUnmountAttempts).toEqual([])
-    act(() => vi.advanceTimersByTime(399))
 
-    expect(screen.getByRole('main')).toHaveAttribute('data-experience-phase', 'entering')
-    expect(manualCanvasMountAttempts).toEqual([0])
-    expect(manualCanvasUnmountAttempts).toEqual([])
-    act(() => vi.advanceTimersByTime(1))
+    expect(screen.queryByRole('heading', { level: 1 })).not.toBeInTheDocument()
+    act(() => latestCanvasProps?.onEntryComplete())
+    const content = screen.getByTestId('experience-content')
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('เรียนรู้ Three.js')
+    expect(screen.getByRole('main')).toHaveAttribute(
+      'data-experience-phase',
+      'revealing-content',
+    )
+    fireEvent.transitionEnd(content)
 
     expect(screen.getByRole('main')).toHaveAttribute('data-experience-phase', 'entered')
     expect(manualCanvasMountAttempts).toEqual([0])

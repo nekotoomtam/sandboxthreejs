@@ -2,7 +2,11 @@ import * as THREE from 'three'
 import type { ExperienceComposition } from './experienceComposition'
 
 export class CameraController {
-  constructor(private readonly camera: THREE.PerspectiveCamera) {}
+  private readonly camera: THREE.PerspectiveCamera
+
+  constructor(camera: THREE.PerspectiveCamera) {
+    this.camera = camera
+  }
 
   apply(composition: ExperienceComposition, rawProgress: number): void {
     const progress = THREE.MathUtils.clamp(rawProgress, 0, 1)

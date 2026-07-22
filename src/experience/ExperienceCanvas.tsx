@@ -3,33 +3,36 @@ import { ExperienceRuntime } from './runtime/ExperienceRuntime'
 
 export type ExperienceCanvasProps = {
   attempt: number
-  entered: boolean
+  entryActive: boolean
   onProgress: (progress: number) => void
   onReady: () => void
+  onEntryComplete: () => void
   onError: (message: string) => void
 }
 
 export function ExperienceCanvas({
   attempt,
-  entered,
+  entryActive,
   onProgress,
   onReady,
+  onEntryComplete,
   onError,
 }: ExperienceCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<ExperienceRuntime>(null)
-  const enteredRef = useRef(entered)
-  enteredRef.current = entered
+  const entryRequestedRef = useRef(false)
+  const onEntryCompleteRef = useRef(onEntryComplete)
+  onEntryCompleteRef.current = onEntryComplete
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
     let active = true
     const runtime = new ExperienceRuntime()
+    entryRequestedRef.current = false
 
     try {
       runtime.mount(container)
-      runtime.setEntered(enteredRef.current)
       runtimeRef.current = runtime
       runtime.load('/models/mona/Mona.vrm', (progress) => {
         if (active) onProgress(progress)
@@ -54,8 +57,15 @@ export function ExperienceCanvas({
   }, [attempt, onError, onProgress, onReady])
 
   useEffect(() => {
-    runtimeRef.current?.setEntered(entered)
-  }, [entered])
+    if (!entryActive || entryRequestedRef.current) return
+    const runtime = runtimeRef.current
+    if (!runtime) return
+
+    entryRequestedRef.current = true
+    const reducedMotion =
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    runtime.playEntry(() => onEntryCompleteRef.current(), reducedMotion)
+  }, [attempt, entryActive])
 
   return <div ref={containerRef} className="experience-canvas" aria-label="ฉาก Three.js ของ Mona" />
 }

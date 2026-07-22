@@ -8,7 +8,7 @@ const runtimeSpies = vi.hoisted(() => {
   const runtimes: Array<{
     mount: ReturnType<typeof vi.fn>
     load: ReturnType<typeof vi.fn>
-    setEntered: ReturnType<typeof vi.fn>
+    playEntry: ReturnType<typeof vi.fn>
     dispose: ReturnType<typeof vi.fn>
   }> = []
 
@@ -16,7 +16,7 @@ const runtimeSpies = vi.hoisted(() => {
     const runtime = {
       mount: vi.fn(),
       load: vi.fn().mockResolvedValue(undefined),
-      setEntered: vi.fn(),
+      playEntry: vi.fn(),
       dispose: vi.fn(),
     }
     runtime.mount.mockReturnValue(runtime)
@@ -51,10 +51,11 @@ describe('ExperienceCanvas', () => {
     const callbacks = {
       onProgress: vi.fn(),
       onReady,
+      onEntryComplete: vi.fn(),
       onError: vi.fn(),
     }
     const { rerender, unmount } = render(
-      <ExperienceCanvas attempt={0} entered={false} {...callbacks} />,
+      <ExperienceCanvas attempt={0} entryActive={false} {...callbacks} />,
     )
 
     await waitFor(() => expect(onReady).toHaveBeenCalledOnce())
@@ -65,9 +66,12 @@ describe('ExperienceCanvas', () => {
       expect.any(Function),
     )
 
-    rerender(<ExperienceCanvas attempt={0} entered {...callbacks} />)
+    rerender(<ExperienceCanvas attempt={0} entryActive {...callbacks} />)
     expect(runtimeSpies.constructor).toHaveBeenCalledOnce()
-    expect(runtime.setEntered).toHaveBeenLastCalledWith(true)
+    expect(runtime.playEntry).toHaveBeenCalledWith(expect.any(Function), false)
+
+    rerender(<ExperienceCanvas attempt={0} entryActive {...callbacks} />)
+    expect(runtime.playEntry).toHaveBeenCalledOnce()
 
     unmount()
     expect(runtime.dispose).toHaveBeenCalledOnce()
@@ -77,18 +81,19 @@ describe('ExperienceCanvas', () => {
     const callbacks = {
       onProgress: vi.fn(),
       onReady: vi.fn(),
+      onEntryComplete: vi.fn(),
       onError: vi.fn(),
     }
     const { rerender } = render(
-      <ExperienceCanvas attempt={0} entered {...callbacks} />,
+      <ExperienceCanvas attempt={0} entryActive {...callbacks} />,
     )
     await waitFor(() => expect(callbacks.onReady).toHaveBeenCalledOnce())
 
-    rerender(<ExperienceCanvas attempt={1} entered {...callbacks} />)
+    rerender(<ExperienceCanvas attempt={1} entryActive {...callbacks} />)
     await waitFor(() => expect(callbacks.onReady).toHaveBeenCalledTimes(2))
 
     expect(runtimeSpies.runtimes).toHaveLength(2)
-    expect(runtimeSpies.runtimes[1].setEntered).toHaveBeenCalledWith(true)
+    expect(runtimeSpies.runtimes[1].playEntry).toHaveBeenCalledWith(expect.any(Function), false)
   })
 
   it('stops forwarding progress after cleanup', () => {
@@ -105,9 +110,10 @@ describe('ExperienceCanvas', () => {
     const { unmount } = render(
       <ExperienceCanvas
         attempt={0}
-        entered={false}
+        entryActive={false}
         onProgress={onProgress}
         onReady={vi.fn()}
+        onEntryComplete={vi.fn()}
         onError={vi.fn()}
       />,
     )
@@ -131,9 +137,10 @@ describe('ExperienceCanvas', () => {
     render(
       <ExperienceCanvas
         attempt={0}
-        entered={false}
+        entryActive={false}
         onProgress={vi.fn()}
         onReady={vi.fn()}
+        onEntryComplete={vi.fn()}
         onError={onError}
       />,
     )

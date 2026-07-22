@@ -5,7 +5,6 @@ import {
   type ExperienceComposition,
 } from './experienceComposition'
 import {
-  ENTRY_DURATION_MS,
   sampleEntryTimeline,
   type EntryTimelineSample,
 } from './entryTimeline'
@@ -100,14 +99,6 @@ export class ExperienceRuntime {
     this.entryActive = true
     this.entryReducedMotion = reducedMotion
     this.onEntryComplete = onComplete
-  }
-
-  setEntered(entered: boolean): void {
-    if (!entered || this.entryActive || this.entryComplete) return
-    this.entrySample = sampleEntryTimeline(ENTRY_DURATION_MS, false)
-    this.entryComplete = true
-    this.cameraController.apply(this.composition, this.entrySample.cameraProgress)
-    this.mona?.applyEntrySample(this.entrySample)
   }
 
   dispose(): void {
