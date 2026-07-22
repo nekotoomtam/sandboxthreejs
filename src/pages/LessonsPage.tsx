@@ -1,7 +1,10 @@
 import { Link } from 'react-router'
 import { lessonCatalog } from '../lessons/lesson.registry'
+import { useLearningProgress } from '../progress/progress.context'
 
 export function LessonsPage() {
+  const { isLessonCompleted } = useLearningProgress()
+
   return (
     <div className="mx-auto max-w-6xl px-5 py-9 sm:px-8">
       <div className="max-w-2xl">
@@ -16,6 +19,7 @@ export function LessonsPage() {
       <div className="mt-9 space-y-4">
         {lessonCatalog.map((lesson) => {
           const available = lesson.status === 'available'
+          const completed = isLessonCompleted(lesson.id)
           return (
             <article
               key={lesson.id}
@@ -38,6 +42,11 @@ export function LessonsPage() {
                   <span className="rounded-full bg-[#edf3f0] px-2.5 py-1 text-[10px] font-bold text-[#5c796f]">
                     {lesson.topic}
                   </span>
+                  {completed && (
+                    <span className="rounded-full bg-[#dff1e8] px-2.5 py-1 text-[10px] font-bold text-[#286b56]">
+                      ✓ ผ่านแล้ว
+                    </span>
+                  )}
                 </div>
                 <p className="mt-1 text-sm text-[#6c7d78]">{lesson.summary}</p>
               </div>
@@ -46,7 +55,7 @@ export function LessonsPage() {
                   to={`/lessons/${lesson.id}`}
                   className="rounded-xl bg-[#e6f1ec] px-4 py-2.5 text-center text-xs font-extrabold text-[#296d59] transition hover:bg-[#d5eae1]"
                 >
-                  เปิดบทเรียน →
+                  {completed ? 'ทบทวนบทเรียน ↻' : 'เปิดบทเรียน →'}
                 </Link>
               ) : (
                 <span className="text-xs font-bold text-[#99a39f]">{lesson.durationMinutes} นาที · เร็ว ๆ นี้</span>

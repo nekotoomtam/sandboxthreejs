@@ -1,4 +1,6 @@
 import { NavLink, Outlet } from 'react-router'
+import { lessonCatalog } from '../lessons/lesson.registry'
+import { useLearningProgress } from '../progress/progress.context'
 
 const navItems = [
   { to: '/', label: 'ภาพรวม', icon: '⌂', end: true },
@@ -8,6 +10,12 @@ const navItems = [
 ]
 
 export function AppShell() {
+  const { isLessonCompleted } = useLearningProgress()
+  const completedLessonCount = lessonCatalog.filter((lesson) =>
+    isLessonCompleted(lesson.id),
+  ).length
+  const progressPercent = (completedLessonCount / lessonCatalog.length) * 100
+
   return (
     <div className="min-h-screen bg-[#f3f5f4] text-[#142823]">
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-[244px] flex-col border-r border-white/10 bg-[#102f2b] text-white lg:flex">
@@ -47,13 +55,20 @@ export function AppShell() {
           <div className="rounded-2xl border border-white/10 bg-white/6 p-4">
             <div className="mb-2 flex items-center justify-between text-xs">
               <span className="text-emerald-50/65">เส้นทางพื้นฐาน</span>
-              <span className="font-bold text-[#ffc66e]">1/4</span>
+              <span className="font-bold text-[#ffc66e]">
+                {completedLessonCount}/{lessonCatalog.length}
+              </span>
             </div>
             <div className="h-1.5 overflow-hidden rounded-full bg-black/20">
-              <div className="h-full w-1/4 rounded-full bg-[#f3a83b]" />
+              <div
+                className="h-full rounded-full bg-[#f3a83b] transition-[width] duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
             </div>
             <p className="mt-3 text-[11px] leading-5 text-emerald-50/45">
-              เริ่มจากกล่องหนึ่งใบ แล้วค่อยสร้างโลก 3D ของคุณ
+              {completedLessonCount > 0
+                ? 'บันทึกความคืบหน้าบนเครื่องนี้เรียบร้อยแล้ว'
+                : 'เริ่มจากกล่องหนึ่งใบ แล้วค่อยสร้างโลก 3D ของคุณ'}
             </p>
           </div>
         </div>

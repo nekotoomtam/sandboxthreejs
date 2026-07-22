@@ -1,7 +1,11 @@
 import { Link } from 'react-router'
 import { lessonCatalog } from '../lessons/lesson.registry'
+import { useLearningProgress } from '../progress/progress.context'
 
 export function HomePage() {
+  const { isLessonCompleted } = useLearningProgress()
+  const firstLessonCompleted = isLessonCompleted('hello-threejs')
+
   return (
     <div className="mx-auto max-w-[1380px] px-5 py-8 sm:px-8 lg:py-10">
       <section className="soft-grid relative overflow-hidden rounded-[28px] bg-[#dcece5] px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
@@ -24,7 +28,7 @@ export function HomePage() {
               to="/lessons/hello-threejs"
               className="rounded-xl bg-[#173f37] px-5 py-3 text-sm font-extrabold text-white shadow-[0_10px_25px_rgba(23,63,55,.18)] transition hover:-translate-y-0.5 hover:bg-[#205346]"
             >
-              เริ่มบทแรก <span className="ml-2">→</span>
+              {firstLessonCompleted ? 'ทบทวนบทแรก' : 'เริ่มบทแรก'} <span className="ml-2">→</span>
             </Link>
             <Link
               to="/concepts"
@@ -57,6 +61,7 @@ export function HomePage() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {lessonCatalog.map((lesson) => {
             const available = lesson.status === 'available'
+            const completed = isLessonCompleted(lesson.id)
             const content = (
               <>
                 <div className="flex items-start justify-between">
@@ -67,8 +72,14 @@ export function HomePage() {
                   >
                     {String(lesson.order).padStart(2, '0')}
                   </span>
-                  <span className="rounded-full bg-[#f1f4f3] px-2.5 py-1 text-[10px] font-bold text-[#768580]">
-                    {lesson.durationMinutes} นาที
+                  <span
+                    className={`rounded-full px-2.5 py-1 text-[10px] font-bold ${
+                      completed
+                        ? 'bg-[#dff1e8] text-[#286b56]'
+                        : 'bg-[#f1f4f3] text-[#768580]'
+                    }`}
+                  >
+                    {completed ? '✓ ผ่านแล้ว' : `${lesson.durationMinutes} นาที`}
                   </span>
                 </div>
                 <p className="mt-5 text-[11px] font-extrabold uppercase tracking-[0.12em] text-[#d98b27]">
@@ -77,7 +88,7 @@ export function HomePage() {
                 <h3 className="mt-1 text-lg font-extrabold text-[#233f38]">{lesson.title}</h3>
                 <p className="mt-2 text-sm leading-6 text-[#6c7b77]">{lesson.summary}</p>
                 <div className="mt-5 border-t border-[#e8edeb] pt-4 text-xs font-bold text-[#397561]">
-                  {available ? 'เริ่มเรียน →' : 'เร็ว ๆ นี้'}
+                  {available ? (completed ? 'ทบทวนบทเรียน ↻' : 'เริ่มเรียน →') : 'เร็ว ๆ นี้'}
                 </div>
               </>
             )

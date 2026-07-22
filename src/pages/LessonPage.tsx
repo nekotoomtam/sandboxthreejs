@@ -1,14 +1,20 @@
 import { Link, Navigate, useParams } from 'react-router'
 import { SandboxWorkspace } from '../components/SandboxWorkspace'
-import { getLessonById } from '../lessons/lesson.registry'
+import { getLessonById, getNextPublishedLesson } from '../lessons/lesson.registry'
+import { useLearningProgress } from '../progress/progress.context'
 
 export function LessonPage() {
   const { lessonId } = useParams()
   const lesson = getLessonById(lessonId)
+  const { completeExercise, isLessonCompleted } = useLearningProgress()
 
   if (!lesson) {
     return <Navigate to="/404" replace />
   }
+
+  const lessonCompleted = isLessonCompleted(lesson.id)
+  const nextLesson = getNextPublishedLesson(lesson.order)
+  const requiredExerciseIds = lesson.exercises.map((exercise) => exercise.id)
 
   return (
     <div className="mx-auto max-w-[1480px] px-5 py-6 sm:px-8 lg:py-8">
@@ -22,6 +28,9 @@ export function LessonPage() {
           <p className="mt-2 text-sm leading-6 text-[#667a74]">{lesson.summary}</p>
         </div>
         <div className="flex gap-2 text-xs font-bold text-[#58736b]">
+          {lessonCompleted && (
+            <span className="rounded-full bg-[#dff1e8] px-3 py-2 text-[#21684f]">✓ ผ่านแล้ว</span>
+          )}
           <span className="rounded-full border border-[#d9e2df] bg-white px-3 py-2">◷ {lesson.durationMinutes} นาที</span>
           <span className="rounded-full border border-[#d9e2df] bg-white px-3 py-2">{lesson.difficulty}</span>
         </div>
@@ -105,7 +114,56 @@ export function LessonPage() {
             activeObjectId={lesson.sandbox.activeObjectId}
             exercise={lesson.exercises[0]}
             codeLab={lesson.sandbox.codeLab}
+            onExercisePassed={(exerciseId) =>
+              completeExercise(lesson.id, exerciseId, requiredExerciseIds)
+            }
           />
+
+          {lessonCompleted && (
+            <section
+              data-testid="lesson-complete"
+              className="overflow-hidden rounded-2xl border border-[#b9dccd] bg-[#e5f4ed] shadow-[0_12px_34px_rgba(31,103,79,.09)]"
+            >
+              <div className="grid gap-5 px-6 py-6 sm:grid-cols-[1fr_auto] sm:items-center sm:px-8">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="grid size-8 place-items-center rounded-full bg-[#26785e] text-sm font-black text-white">✓</span>
+                    <p className="text-[10px] font-black tracking-[0.14em] text-[#3b7a66]">LESSON COMPLETED</p>
+                  </div>
+                  <h2 className="mt-3 text-xl font-black text-[#174c3c]">ผ่านบทเรียนแล้ว</h2>
+                  <p className="mt-1 text-sm leading-6 text-[#527469]">
+                    ความคืบหน้าถูกบันทึกไว้บนเครื่องนี้แล้ว
+                    {nextLesson
+                      ? ' พร้อมไปต่อยังบทถัดไปได้เลย'
+                      : ' ตอนนี้บทถัดไปยังอยู่ระหว่างเตรียมเนื้อหา'}
+                  </p>
+                </div>
+                <div className="flex flex-wrap gap-2 sm:justify-end">
+                  {nextLesson ? (
+                    <Link
+                      to={`/lessons/${nextLesson.id}`}
+                      className="rounded-xl bg-[#173f37] px-5 py-3 text-sm font-black text-white transition hover:bg-[#225448]"
+                    >
+                      ไปบทถัดไป →
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/lessons"
+                      className="rounded-xl bg-[#173f37] px-5 py-3 text-sm font-black text-white transition hover:bg-[#225448]"
+                    >
+                      กลับเส้นทางเรียน →
+                    </Link>
+                  )}
+                  <Link
+                    to="/playground"
+                    className="rounded-xl border border-[#9ec9b8] bg-white/60 px-4 py-3 text-sm font-bold text-[#2e6b57] hover:bg-white"
+                  >
+                    ฝึกต่อใน Playground
+                  </Link>
+                </div>
+              </div>
+            </section>
+          )}
         </div>
       </div>
     </div>

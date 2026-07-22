@@ -58,3 +58,20 @@ test('searches the concept library and opens an interactive concept', async ({ p
   )
   await expect(page.locator('[data-sandbox-canvas="true"]')).toHaveCount(1)
 })
+
+test('persists lesson completion and restores it after reload', async ({ page }) => {
+  await page.goto('/lessons/hello-threejs')
+  await page.getByRole('spinbutton', { name: 'ค่าตัวเลขการหมุนแกน Y' }).fill('45')
+  await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
+
+  await expect(page.getByTestId('lesson-complete')).toBeVisible()
+  await expect(page.getByText('1/4')).toBeVisible()
+
+  await page.reload()
+  await expect(page.getByTestId('lesson-complete')).toBeVisible()
+
+  await page.goto('/lessons')
+  await expect(
+    page.getByRole('article').filter({ hasText: 'Hello, Three.js' }),
+  ).toContainText('ผ่านแล้ว')
+})

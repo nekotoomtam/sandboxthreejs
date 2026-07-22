@@ -49,3 +49,7 @@ export function getLessonById(id: string | undefined) {
 export function getPublishedLessons() {
   return [...lessons].sort((a, b) => a.order - b.order)
 }
+
+export function getNextPublishedLesson(currentOrder: number) {
+  return getPublishedLessons().find((lesson) => lesson.order > currentOrder)
+}

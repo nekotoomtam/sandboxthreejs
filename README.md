@@ -45,6 +45,7 @@ Native Three.js
 - `src/sandbox/runtime` เป็นเจ้าของ lifecycle ของ scene, camera, renderer และ OrbitControls
 - `src/sandbox/code` รันโค้ดของผู้เรียนใน Web Worker ที่ถูกสร้างและยกเลิกแยกจากหน้าเว็บ
 - `src/exercises` ตรวจคำตอบจาก `SandboxSnapshot` ไม่ตรวจรูปแบบโค้ดของผู้เรียน
+- `src/progress` บันทึก exercise และ lesson ที่ผ่านแล้วลง `localStorage` ด้วย schema ที่มี version
 - `src/components/SandboxWorkspace.tsx` เชื่อม canvas, camera HUD, transform controls, Code Lab และแบบฝึกหัดเข้าด้วยกัน
 - `tests/e2e` ตรวจเส้นทางผู้เรียนสำคัญผ่าน browser จริง
 

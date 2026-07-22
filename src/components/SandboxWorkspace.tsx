@@ -19,6 +19,7 @@ type SandboxWorkspaceProps = {
   activeObjectId: string
   exercise?: Exercise
   codeLab?: CodeLabDefinition
+  onExercisePassed?: (exerciseId: string) => void
   compact?: boolean
 }
 
@@ -27,6 +28,7 @@ export function SandboxWorkspace({
   activeObjectId,
   exercise,
   codeLab,
+  onExercisePassed,
   compact = false,
 }: SandboxWorkspaceProps) {
   const canvasRef = useRef<SandboxCanvasHandle>(null)
@@ -49,7 +51,11 @@ export function SandboxWorkspace({
   const handleValidate = () => {
     const currentSnapshot = canvasRef.current?.getSnapshot()
     if (exercise && currentSnapshot) {
-      setResult(validateExercise(exercise.validator, currentSnapshot))
+      const validationResult = validateExercise(exercise.validator, currentSnapshot)
+      setResult(validationResult)
+      if (validationResult.passed) {
+        onExercisePassed?.(exercise.id)
+      }
     }
   }
 
