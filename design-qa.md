@@ -90,9 +90,10 @@ Evidence: `docs/superpowers/qa/mona-experience-phase-1-comparison-final.png` and
 - `npm test`: 12 files, 37 tests passed.
 - `npm run lint`: passed.
 - `npm run build`: passed. The eager entry fell from `1,022.12 kB` to `271.04 kB`; `ExperiencePage` (`191.25 kB`) and Three.js (`560.51 kB`) are separate chunks, so `/lessons` no longer pays the Mona runtime entry cost.
-- `npm run test:e2e`: 7 tests passed.
+- `npx playwright test --workers=1`: the deterministic full E2E gate passed all 7 tests, including Mona and the existing guided-code flow.
 - `git diff --check`: passed.
-- The prior intermittent `.cm-content` timeout did not reproduce in the full E2E run, so no retry or timeout inflation was added.
+- The prior intermittent `.cm-content` timeout did not reproduce, so no editor-readiness workaround, retry, or timeout inflation was added.
+- Two fresh default-parallel `npm run test:e2e` runs passed Mona but exposed the existing guided-code worker's internal 1.5-second watchdog under seven-worker load (6 passed, 1 failed). The focused guided-code case then passed 3/3, and the full sequential gate passed 7/7. This is recorded as an inherited non-Mona concurrency flake; unrelated lesson behavior and timeouts remain unchanged.
 - Known non-blocking environmental output retained without scope expansion: `NO_COLOR` is ignored when `FORCE_COLOR` is set.
 
 ## Implementation Checklist
