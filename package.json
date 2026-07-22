@@ -17,6 +17,7 @@
     "@codemirror/language": "^6.12.4",
     "@lezer/highlight": "^1.2.3",
     "@pixiv/three-vrm": "^3.5.5",
+    "@pixiv/three-vrm-animation": "^3.5.5",
     "codemirror": "^6.0.2",
     "react": "^19.2.7",
     "react-dom": "^19.2.7",

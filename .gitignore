@@ -24,3 +24,8 @@ test-results
 *.njsproj
 *.sln
 *.sw?
+
+# Local licensed Mona animation authoring files
+public/models/mona/animations/*.vrma
+public/models/mona/animations/*.blend
+public/models/mona/animations/*.blend1
