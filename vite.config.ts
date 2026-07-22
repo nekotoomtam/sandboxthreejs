@@ -5,7 +5,7 @@ import tailwindcss from '@tailwindcss/vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  // The Three.js runtime is lazy-loaded only on pages that render a sandbox.
+  // Three.js runtimes are route-split so non-3D pages avoid their entry cost.
   build: {
     chunkSizeWarningLimit: 600,
   },
