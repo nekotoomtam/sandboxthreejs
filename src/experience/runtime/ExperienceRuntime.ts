@@ -1,33 +1,43 @@
 import * as THREE from 'three'
+import { CameraController } from './CameraController'
+import {
+  resolveEntryComposition,
+  type ExperienceComposition,
+} from './experienceComposition'
+import {
+  ENTRY_DURATION_MS,
+  sampleEntryTimeline,
+  type EntryTimelineSample,
+} from './entryTimeline'
 import { createVrmLoader, loadMonaAsset } from './monaLoader'
 import { MonaController } from './MonaController'
-import {
-  resolveExperienceComposition,
-  selectExperienceQuality,
-  shouldShowStartMarker,
-} from './experienceRuntime.helpers'
+import { selectExperienceQuality } from './experienceRuntime.helpers'
 
 export class ExperienceRuntime {
   private readonly scene = new THREE.Scene()
   private readonly camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100)
+  private readonly cameraController = new CameraController(this.camera)
   private readonly timer = new THREE.Timer()
   private renderer?: THREE.WebGLRenderer
   private container?: HTMLElement
   private resizeObserver?: ResizeObserver
   private animationFrame?: number
   private mona?: MonaController
-  private startMarker?: THREE.Group
-  private ready = false
-  private entered = false
   private disposed = false
   private hidden = document.hidden
+  private composition: ExperienceComposition = resolveEntryComposition(1, 1)
+  private entryElapsedMs = 0
+  private entryActive = false
+  private entryComplete = false
+  private entryReducedMotion = false
+  private entrySample: EntryTimelineSample = sampleEntryTimeline(0, false)
+  private onEntryComplete?: () => void
 
   mount(container: HTMLElement): this {
     if (this.disposed) throw new Error('ExperienceRuntime is disposed.')
     this.container = container
     this.scene.background = new THREE.Color(0x174c42)
     this.scene.fog = new THREE.Fog(0x174c42, 8, 24)
-    this.camera.position.set(0.3, 1.45, 6.4)
 
     const coarsePointer = window.matchMedia('(pointer: coarse)').matches
     const quality = selectExperienceQuality({
@@ -59,20 +69,6 @@ export class ExperienceRuntime {
     grid.position.y = 0.01
     this.scene.add(grid)
 
-    const marker = new THREE.Group()
-    const markerMaterial = new THREE.MeshStandardMaterial({
-      color: 0xffc15a,
-      emissive: 0xd57b1e,
-      emissiveIntensity: 1.05,
-      roughness: 0.35,
-    })
-    marker.add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.08, 20, 72), markerMaterial))
-    marker.position.set(-1.65, 1.05, 0.3)
-    marker.rotation.x = -0.1
-    marker.visible = false
-    this.scene.add(marker)
-    this.startMarker = marker
-
     this.resizeObserver = new ResizeObserver(() => this.resize())
     this.resizeObserver.observe(container)
     this.timer.connect(document)
@@ -92,20 +88,34 @@ export class ExperienceRuntime {
     this.mona?.dispose()
     this.mona = mona
     this.mona.attachTo(this.scene)
-    this.ready = true
-    this.updateMarkerVisibility()
+    this.mona.setCompositionPosition(this.composition.monaPosition)
+    this.mona.applyEntrySample(this.entrySample)
+    this.mona.update(0)
+    this.renderer?.render(this.scene, this.camera)
     onProgress(1)
   }
 
+  playEntry(onComplete: () => void, reducedMotion: boolean): void {
+    if (this.disposed || !this.mona || this.entryActive || this.entryComplete) return
+    this.entryActive = true
+    this.entryReducedMotion = reducedMotion
+    this.onEntryComplete = onComplete
+  }
+
   setEntered(entered: boolean): void {
-    this.entered = entered
-    this.updateMarkerVisibility()
+    if (!entered || this.entryActive || this.entryComplete) return
+    this.entrySample = sampleEntryTimeline(ENTRY_DURATION_MS, false)
+    this.entryComplete = true
+    this.cameraController.apply(this.composition, this.entrySample.cameraProgress)
+    this.mona?.applyEntrySample(this.entrySample)
   }
 
   dispose(): void {
     if (this.disposed) return
     this.disposed = true
     if (this.animationFrame !== undefined) cancelAnimationFrame(this.animationFrame)
+    this.onEntryComplete = undefined
+    this.entryActive = false
     document.removeEventListener('visibilitychange', this.handleVisibility)
     this.timer.dispose()
     this.resizeObserver?.disconnect()
@@ -126,13 +136,13 @@ export class ExperienceRuntime {
     if (!this.container || !this.renderer) return
     const width = Math.max(this.container.clientWidth, 1)
     const height = Math.max(this.container.clientHeight, 1)
-    const composition = resolveExperienceComposition(width)
+    this.composition = resolveEntryComposition(width, height)
     this.renderer.setSize(width, height, false)
     this.camera.aspect = width / height
-    this.camera.lookAt(...composition.cameraTarget)
     this.camera.updateProjectionMatrix()
-    this.startMarker?.position.set(...composition.markerPosition)
-    this.startMarker?.scale.setScalar(composition.markerScale)
+    this.cameraController.apply(this.composition, this.entrySample.cameraProgress)
+    this.mona?.setCompositionPosition(this.composition.monaPosition)
+    this.mona?.applyEntrySample(this.entrySample)
   }
 
   private tick = (timestamp?: DOMHighResTimeStamp) => {
@@ -140,19 +150,29 @@ export class ExperienceRuntime {
     this.timer.update(timestamp)
     const delta = this.timer.getDelta()
     if (!this.hidden) {
+      if (this.entryActive) {
+        this.entryElapsedMs += delta * 1_000
+        this.entrySample = sampleEntryTimeline(
+          this.entryElapsedMs,
+          this.entryReducedMotion,
+        )
+        this.cameraController.apply(this.composition, this.entrySample.cameraProgress)
+        this.mona?.applyEntrySample(this.entrySample)
+      }
       this.mona?.update(delta)
       this.renderer?.render(this.scene, this.camera)
+      if (this.entryActive && this.entrySample.complete) {
+        this.entryActive = false
+        this.entryComplete = true
+        const onComplete = this.onEntryComplete
+        this.onEntryComplete = undefined
+        onComplete?.()
+      }
     }
     this.animationFrame = requestAnimationFrame(this.tick)
   }
 
   private handleVisibility = () => {
     this.hidden = document.hidden
-  }
-
-  private updateMarkerVisibility(): void {
-    if (this.startMarker) {
-      this.startMarker.visible = shouldShowStartMarker(this.ready, this.entered)
-    }
   }
 }

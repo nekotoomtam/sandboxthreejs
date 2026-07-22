@@ -12,11 +12,17 @@ const loaderSpies = vi.hoisted(() => ({
 const controllerSpies = vi.hoisted(() => {
   const instances: Array<{
     attachTo: ReturnType<typeof vi.fn>
+    setCompositionPosition: ReturnType<typeof vi.fn>
+    applyEntrySample: ReturnType<typeof vi.fn>
+    update: ReturnType<typeof vi.fn>
     dispose: ReturnType<typeof vi.fn>
   }> = []
   const constructor = vi.fn(function MonaControllerMock() {
     const controller = {
       attachTo: vi.fn(),
+      setCompositionPosition: vi.fn(),
+      applyEntrySample: vi.fn(),
+      update: vi.fn(),
       dispose: vi.fn(),
     }
     instances.push(controller)
@@ -35,6 +41,9 @@ describe('ExperienceRuntime', () => {
     controllerSpies.constructor.mockImplementation(function MonaControllerMock() {
       const controller = {
         attachTo: vi.fn(),
+        setCompositionPosition: vi.fn(),
+        applyEntrySample: vi.fn(),
+        update: vi.fn(),
         dispose: vi.fn(),
       }
       controllerSpies.instances.push(controller)
@@ -79,5 +88,82 @@ describe('ExperienceRuntime', () => {
     expect(updateTimer.mock.invocationCallOrder[0])
       .toBeLessThan(readDelta.mock.invocationCallOrder[0])
     runtime.dispose()
+  })
+
+  it('starts entry once and reports completion from runtime motion', () => {
+    const getDelta = vi.spyOn(THREE.Timer.prototype, 'getDelta').mockReturnValue(3.2)
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    const runtime = new ExperienceRuntime()
+    const controller = {
+      applyEntrySample: vi.fn(),
+      update: vi.fn(),
+      dispose: vi.fn(),
+    }
+    ;(runtime as unknown as { mona: typeof controller }).mona = controller
+    const finished = vi.fn()
+
+    runtime.playEntry(finished, false)
+    runtime.playEntry(finished, false)
+    ;(runtime as unknown as { tick: (timestamp: number) => void }).tick(3_200)
+
+    expect(getDelta).toHaveBeenCalled()
+    expect(controller.applyEntrySample).toHaveBeenLastCalledWith(
+      expect.objectContaining({ progress: 1, complete: true }),
+    )
+    expect(finished).toHaveBeenCalledOnce()
+    runtime.dispose()
+  })
+
+  it('does not advance entry time while the document is hidden', () => {
+    vi.spyOn(THREE.Timer.prototype, 'getDelta').mockReturnValue(2)
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    const runtime = new ExperienceRuntime()
+    const controller = {
+      applyEntrySample: vi.fn(),
+      update: vi.fn(),
+      dispose: vi.fn(),
+    }
+    ;(runtime as unknown as { mona: typeof controller; hidden: boolean }).mona = controller
+    runtime.playEntry(vi.fn(), false)
+    ;(runtime as unknown as { hidden: boolean }).hidden = true
+    ;(runtime as unknown as { tick: (timestamp: number) => void }).tick(2_000)
+
+    expect(controller.applyEntrySample).not.toHaveBeenCalled()
+
+    ;(runtime as unknown as { hidden: boolean }).hidden = false
+    vi.spyOn(THREE.Timer.prototype, 'getDelta').mockReturnValue(0.016)
+    ;(runtime as unknown as { tick: (timestamp: number) => void }).tick(2_016)
+
+    expect(controller.applyEntrySample).toHaveBeenLastCalledWith(
+      expect.objectContaining({ progress: 0.005 }),
+    )
+    runtime.dispose()
+  })
+
+  it('does not invoke a late entry completion callback after disposal', () => {
+    vi.spyOn(THREE.Timer.prototype, 'getDelta').mockReturnValue(3.2)
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1))
+    vi.stubGlobal('cancelAnimationFrame', vi.fn())
+    const runtime = new ExperienceRuntime()
+    ;(runtime as unknown as {
+      mona: {
+        applyEntrySample: ReturnType<typeof vi.fn>
+        update: ReturnType<typeof vi.fn>
+        dispose: ReturnType<typeof vi.fn>
+      }
+    }).mona = {
+      applyEntrySample: vi.fn(),
+      update: vi.fn(),
+      dispose: vi.fn(),
+    }
+    const finished = vi.fn()
+    runtime.playEntry(finished, false)
+
+    runtime.dispose()
+    ;(runtime as unknown as { tick: (timestamp: number) => void }).tick(3_200)
+
+    expect(finished).not.toHaveBeenCalled()
   })
 })
