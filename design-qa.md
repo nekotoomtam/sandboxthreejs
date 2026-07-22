@@ -8,8 +8,8 @@
 - Browser interaction verification: authorized Chrome extension at `http://127.0.0.1:5173/`.
 - Capture method: after Chrome interaction verification, the user authorized standalone Playwright Chromium solely for the exact desktop/mobile screenshots and recaptures. It was not used as a substitute for Chrome interaction, focus, console, or route verification.
 - Density normalization: source and implementation are all 1x raster evidence. The source was normalized to the desktop panel size only inside the comparison board; the committed implementation screenshots retain their exact native pixels.
-- Full-view combined input: `.superpowers/sdd/task-7-comparison-final.png` places the source, desktop implementation, and mobile implementation in one board.
-- Focused combined input: `.superpowers/sdd/task-7-comparison-focus.png` places source/implementation header crops and marker/Thai-copy crops together. Focused evidence was required because brand weight and Thai copy were too small to judge reliably in the full-width board.
+- Full-view combined input: `docs/superpowers/qa/mona-experience-phase-1-comparison-final.png` places the source, desktop implementation, and mobile implementation in one durable board.
+- Focused combined input: `docs/superpowers/qa/mona-experience-phase-1-comparison-focus.png` places source/implementation header, marker/Thai-copy, and Mona/hair crops together. Focused evidence was required because brand weight, Thai copy, and spring-bone hair state were too small to judge reliably in the full-width board.
 
 ## Browser and State Verification
 
@@ -17,7 +17,7 @@
 - Ready: Chrome showed `ฉากพร้อมแล้ว` and one `เริ่ม` button only after Mona parsed; the main phase was `ready` and exactly one canvas remained mounted.
 - Focus: keyboard Tab focused the Start button with a visible solid 2.4 px outline.
 - Entered: keyboard Enter reached `data-experience-phase="entered"`, removed the Start button, and retained exactly one canvas.
-- Console: no local application errors. Two external MSN errors predated navigation in the claimed Chrome tab and were excluded by URL. The known inherited `THREE.Clock` deprecation remains a warning only.
+- Console: the final Chrome reload, ready/entry interaction, `/lessons` visit, and return to `/` produced no errors or warnings. The runtime now uses `THREE.Timer`, so the previous `THREE.Clock` deprecation is gone.
 - Lessons: direct `/lessons` navigation rendered the existing course map and lesson cards.
 
 ## Final Findings
@@ -30,7 +30,7 @@
 - Fonts and typography: the implementation uses the existing Inter/system/Noto Sans Thai stack with comparable bold display weight, compact line height, and clear logo/Start hierarchy. The focused crop confirms legible Thai glyph rendering and no wrapping or truncation at either viewport.
 - Spacing and layout rhythm: desktop preserves the source's left marker/right Mona composition with a quiet header and broad spatial field. Mobile keeps the brand, Mona, full marker, Start control, and credit within the viewport without overflow or clipped persistent controls.
 - Colors and visual tokens: forest sky, pale-mint grounded plane/grid, warm amber marker, and off-white text now reproduce the intended forest/mint/amber balance. Contrast remains clear in ready and focus states.
-- Image quality and asset fidelity: the runtime uses the real Mona VRM and a real Three.js torus marker. No concept raster, CSS/div illustration, fake SVG, emoji, or placeholder imagery is used. The simpler Phase 1 world is an approved scope constraint rather than an asset substitution.
+- Image quality and asset fidelity: the runtime uses the real Mona VRM and a real Three.js torus marker. Final world transforms are applied before world matrices are refreshed and the spring manager is reset, so Mona's ponytail now falls naturally instead of being flung vertically from stale spring state. No concept raster, CSS/div illustration, fake SVG, emoji, or placeholder imagery is used. The simpler Phase 1 world is an approved scope constraint rather than an asset substitution.
 - Copy and content: loading, ready, Start, brand, and Mona credit copy are coherent and correctly rendered in Thai/English. The ready and Start copy sit inside the spatial marker at both captured viewports.
 - States, accessibility, and responsiveness: loading, ready, keyboard focus, entered, one-canvas persistence, desktop, and narrow-screen behavior were verified. The DOM button remains the accessible control aligned with the Three.js marker.
 
@@ -38,7 +38,7 @@
 
 ### Initial comparison — blocked by three material findings
 
-Evidence: `.superpowers/sdd/task-7-comparison-initial.png`.
+Evidence: initial working comparison iteration recorded below; final durable boards supersede the non-final scratch board.
 
 - [P1] The desktop amber marker was cropped by the left edge and the mobile marker was completely outside the viewport. The DOM Start copy sat below the marker instead of inside it.
 - [P2] Mona read centered and nearly front-on on desktop instead of right-weighted at a three-quarter angle.
@@ -55,7 +55,7 @@ Fixes:
 
 ### Second comparison — one mobile P1 remained
 
-Evidence: `.superpowers/sdd/task-7-comparison-pass-2.png`.
+Evidence: second working comparison iteration recorded below; final durable boards supersede the non-final scratch board.
 
 - Desktop P1/P2 findings were resolved.
 - [P1] On mobile, the marker intersected the floor plane, leaving only an arc visible.
@@ -66,22 +66,34 @@ Fixes:
 - Raised, reduced, and shifted the mobile torus so its complete circumference remains visible, then aligned the mobile Thai copy to its center.
 - Added the explicit shared tuple type required by the production TypeScript build after the full gate exposed union-tuple spread inference; verified in `869ea2c fix: type Mona responsive composition`.
 
+### Whole-branch review correction — spring-bone P1
+
+- [P1] The previously committed ready-state evidence showed Mona's ponytail stretched vertically because spring bones were updated from stale world state after the final root transform and humanoid pose.
+
+Fixes:
+
+- Added a spring manager fake and strict test order for humanoid pose update → scene attachment → `updateMatrixWorld(true)` → `springBoneManager.reset()`.
+- Added disposal-order coverage proving scene removal precedes deep disposal.
+- Verified fix commit: `3ec6d59 fix: reset Mona spring bones after posing`.
+- Replaced both exact screenshots after the fix; the focused Mona crop shows the ponytail falling behind the head/body at both ready-state viewports.
+
 ### Final comparison — passed
 
-Evidence: `.superpowers/sdd/task-7-comparison-final.png` and `.superpowers/sdd/task-7-comparison-focus.png`.
+Evidence: `docs/superpowers/qa/mona-experience-phase-1-comparison-final.png` and `docs/superpowers/qa/mona-experience-phase-1-comparison-focus.png`.
 
 - Desktop and mobile markers are complete, aligned with the DOM control, and retain practical breathing room.
-- Mona is visible at a distance, statically posed, and staged at a desktop three-quarter angle while remaining visible on mobile.
+- Mona is visible at a distance, statically posed, staged at a desktop three-quarter angle, and has natural downward spring-bone hair at both viewports.
 - Typography, copy, spatial rhythm, colors, real asset quality, and responsive behavior have no actionable P0/P1/P2 drift.
 
 ## Verification
 
-- `npm test`: 12 files, 36 tests passed.
+- `npm test`: 12 files, 37 tests passed.
 - `npm run lint`: passed.
-- `npm run build`: passed; inherited >600 kB chunk warning remains non-blocking.
+- `npm run build`: passed. The eager entry fell from `1,022.12 kB` to `271.04 kB`; `ExperiencePage` (`191.25 kB`) and Three.js (`560.51 kB`) are separate chunks, so `/lessons` no longer pays the Mona runtime entry cost.
 - `npm run test:e2e`: 7 tests passed.
 - `git diff --check`: passed.
-- Known non-blocking debt retained without scope expansion: large entry chunk, inherited `THREE.Clock` deprecation, and environmental `NO_COLOR`/`FORCE_COLOR` warning.
+- The prior intermittent `.cm-content` timeout did not reproduce in the full E2E run, so no retry or timeout inflation was added.
+- Known non-blocking environmental output retained without scope expansion: `NO_COLOR` is ignored when `FORCE_COLOR` is set.
 
 ## Implementation Checklist
 
