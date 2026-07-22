@@ -157,3 +157,31 @@ Fix: added a regression contract for the narrow semantic camera endpoints, moved
 This foundation intentionally uses runtime root rotation plus restrained procedural breathing and weight transfer. The real `idle.vrma` and `turn.vrma` remain the next local Blender authoring pass, calibrated against these approved camera timings. The source `C:\Users\nekot\Desktop\Mona.vrm` was not overwritten, and nothing in this Phase 2 work is approved for public redistribution.
 
 Phase 2 foundation result: passed
+
+---
+
+# Mona Calm Idle VRMA — Local Integration QA
+
+## Asset and Authoring Verification
+
+- Blender authoring used the installed VRM Add-on VRMA exporter.
+- Runtime clip: `Mona_Idle_Calm`, exactly `5.0s`, authored on a 30 fps timeline.
+- Pose: Mona rests both hands at the lower abdomen with the left hand above the right; fingers are not interlaced.
+- The exported VRMA contains humanoid animation only: 54 humanoid bones, 39 animation channels, and no embedded mesh, material, texture, expression, or LookAt payload.
+- The canonical authoring export and ignored runtime copy share SHA-256 `D8FA625386674B66B944E3AB0DC8B8C08D6DF3B2311B2C39C96473999B937406`.
+- Blender re-import recovered one armature, 54 bones, and the full five-second action.
+
+## Runtime and Browser Verification
+
+- The real idle loops through `THREE.AnimationMixer`; randomized blinking remains a separate expression controller.
+- Procedural body motion remains available only as the missing-animation fallback.
+- Desktop ready state remains distant and back-facing; the entered state keeps Mona full-body in the right-hand region.
+- A continuous 25-second entered-state observation showed stable feet/world position, a clean hand pose, natural spring behavior, and no visible loop jump or body penetration.
+- Narrow viewport verification at `390 x 844` retained the full ready Start band and a full-body entered Mona without horizontal overflow.
+- A clean browser startup reached ready with one canvas and no console warnings or errors.
+- Temporarily removing only the ignored runtime VRMA produced the intended warning, reached ready through the procedural fallback, and recovered after restoring the exact file and checksum.
+
+## Local-Only Safety
+
+- `Mona.vrm`, the Blender authoring file, and `idle.vrma` remain local and are excluded from staging.
+- No Mona binary or derived animation asset was pushed or prepared for public redistribution.
