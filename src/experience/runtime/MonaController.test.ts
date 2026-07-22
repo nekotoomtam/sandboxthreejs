@@ -113,6 +113,75 @@ describe('MonaController', () => {
       .toBeLessThan(update.mock.invocationCallOrder[0])
   })
 
+  it('plays a supplied idle clip and advances its mixer before the VRM update', () => {
+    const mixerUpdate = vi.spyOn(THREE.AnimationMixer.prototype, 'update')
+    const action = {
+      reset: vi.fn().mockReturnThis(),
+      setLoop: vi.fn().mockReturnThis(),
+      setEffectiveWeight: vi.fn().mockReturnThis(),
+      play: vi.fn().mockReturnThis(),
+      stop: vi.fn(),
+    }
+    vi.spyOn(THREE.AnimationMixer.prototype, 'clipAction').mockReturnValue(action as never)
+    const vrmUpdate = vi.fn()
+    const vrm = {
+      scene: new THREE.Group(),
+      humanoid: { getNormalizedBoneNode: vi.fn(), update: vi.fn() },
+      update: vrmUpdate,
+    } as unknown as VRM
+    const controller = new MonaController(vrm, () => 0.5)
+
+    controller.setIdleClip(new THREE.AnimationClip('Mona_Idle_Calm', 5, []))
+    controller.update(0.25)
+
+    expect(action.reset).toHaveBeenCalledOnce()
+    expect(action.setLoop).toHaveBeenCalledWith(THREE.LoopRepeat, Infinity)
+    expect(action.play).toHaveBeenCalledOnce()
+    expect(mixerUpdate).toHaveBeenCalledWith(0.25)
+    expect(mixerUpdate.mock.invocationCallOrder[0])
+      .toBeLessThan(vrmUpdate.mock.invocationCallOrder[0])
+  })
+
+  it('keeps randomized blink expression updates separate from the body clip', () => {
+    const setValue = vi.fn()
+    const vrm = {
+      scene: new THREE.Group(),
+      humanoid: { getNormalizedBoneNode: vi.fn(), update: vi.fn() },
+      expressionManager: { setValue },
+      update: vi.fn(),
+    } as unknown as VRM
+    const controller = new MonaController(vrm, () => 0)
+
+    controller.update(2.5375)
+
+    expect(setValue).toHaveBeenCalledWith('blink', expect.closeTo(0.5))
+  })
+
+  it('stops and uncaches animation state during disposal', () => {
+    const stopAllAction = vi.spyOn(THREE.AnimationMixer.prototype, 'stopAllAction')
+    const uncacheRoot = vi.spyOn(THREE.AnimationMixer.prototype, 'uncacheRoot')
+    const action = {
+      reset: vi.fn().mockReturnThis(),
+      setLoop: vi.fn().mockReturnThis(),
+      setEffectiveWeight: vi.fn().mockReturnThis(),
+      play: vi.fn().mockReturnThis(),
+      stop: vi.fn(),
+    }
+    vi.spyOn(THREE.AnimationMixer.prototype, 'clipAction').mockReturnValue(action as never)
+    const vrm = {
+      scene: new THREE.Group(),
+      humanoid: { getNormalizedBoneNode: vi.fn(), update: vi.fn() },
+    } as unknown as VRM
+    const controller = new MonaController(vrm)
+    controller.setIdleClip(new THREE.AnimationClip('Mona_Idle_Calm', 5, []))
+
+    controller.dispose()
+
+    expect(action.stop).toHaveBeenCalledOnce()
+    expect(stopAllAction).toHaveBeenCalledOnce()
+    expect(uncacheRoot).toHaveBeenCalledWith(vrm.scene)
+  })
+
   it('removes Mona and deeply disposes her scene', () => {
     const vrm = { scene: new THREE.Group() } as unknown as VRM
     const scene = new THREE.Scene()

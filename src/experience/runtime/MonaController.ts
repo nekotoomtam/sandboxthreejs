@@ -2,14 +2,19 @@ import * as THREE from 'three'
 import { VRMUtils, type VRM, type VRMHumanBoneName } from '@pixiv/three-vrm'
 import type { Vec3Tuple } from './experienceComposition'
 import { NEUTRAL_STANDING_POSE } from './experienceRuntime.helpers'
+import { BlinkController } from './BlinkController'
 
 export class MonaController {
   readonly vrm: VRM
   private elapsedSeconds = 0
   private turnProgress = 0
+  private readonly blink: BlinkController
+  private mixer?: THREE.AnimationMixer
+  private idleAction?: THREE.AnimationAction
 
-  constructor(vrm: VRM) {
+  constructor(vrm: VRM, random: () => number = Math.random) {
     this.vrm = vrm
+    this.blink = new BlinkController(random)
   }
 
   applyInitialPose() {
@@ -45,23 +50,42 @@ export class MonaController {
     this.vrm.springBoneManager?.reset()
   }
 
+  setIdleClip(clip: THREE.AnimationClip) {
+    this.idleAction?.stop()
+    this.mixer?.stopAllAction()
+    this.mixer?.uncacheRoot(this.vrm.scene)
+    this.mixer = new THREE.AnimationMixer(this.vrm.scene)
+    this.idleAction = this.mixer.clipAction(clip)
+    this.idleAction.reset().setLoop(THREE.LoopRepeat, Infinity).play()
+  }
+
   update(delta: number) {
     this.elapsedSeconds += delta
     const idleWeight = 1 - Math.sin(this.turnProgress * Math.PI)
-    const breath =
-      Math.sin(this.elapsedSeconds * 1.4) * THREE.MathUtils.degToRad(0.7) * idleWeight
-    const turnWeight = Math.sin(this.turnProgress * Math.PI)
-    const weightShift = turnWeight * THREE.MathUtils.degToRad(3)
-    const torsoFollow = turnWeight * THREE.MathUtils.degToRad(-4)
 
-    this.setNormalizedBoneRotation('chest', 'x', breath)
-    this.setNormalizedBoneRotation('hips', 'z', weightShift)
-    this.setNormalizedBoneRotation('chest', 'y', torsoFollow)
+    if (this.idleAction && this.mixer) {
+      this.idleAction.setEffectiveWeight(idleWeight)
+      this.mixer.update(delta)
+    } else {
+      const breath =
+        Math.sin(this.elapsedSeconds * 1.4) * THREE.MathUtils.degToRad(0.7) * idleWeight
+      const turnWeight = Math.sin(this.turnProgress * Math.PI)
+      this.setNormalizedBoneRotation('chest', 'x', breath)
+      this.setNormalizedBoneRotation('hips', 'z', turnWeight * THREE.MathUtils.degToRad(3))
+      this.setNormalizedBoneRotation('chest', 'y', turnWeight * THREE.MathUtils.degToRad(-4))
+    }
+
+    this.vrm.expressionManager?.setValue('blink', this.blink.update(delta))
     this.vrm.humanoid.update()
     this.vrm.update(delta)
   }
 
   dispose() {
+    this.idleAction?.stop()
+    this.mixer?.stopAllAction()
+    this.mixer?.uncacheRoot(this.vrm.scene)
+    this.idleAction = undefined
+    this.mixer = undefined
     this.vrm.scene.removeFromParent()
     VRMUtils.deepDispose(this.vrm.scene)
   }
