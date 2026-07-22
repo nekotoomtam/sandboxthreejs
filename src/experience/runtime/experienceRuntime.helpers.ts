@@ -3,6 +3,12 @@ export type ExperienceQuality = {
   pixelRatio: number
 }
 
+type ExperienceComposition = {
+  cameraTarget: readonly [number, number, number]
+  markerPosition: readonly [number, number, number]
+  markerScale: number
+}
+
 export function resolveLoadProgress(loaded: number, total: number) {
   if (!Number.isFinite(total) || total <= 0) return 0
   return Math.min(Math.max(loaded / total, 0), 1) * 0.92
@@ -24,7 +30,7 @@ export function shouldShowStartMarker(ready: boolean, entered: boolean) {
   return ready && !entered
 }
 
-export function resolveExperienceComposition(width: number) {
+export function resolveExperienceComposition(width: number): ExperienceComposition {
   if (width < 768) {
     return {
       cameraTarget: [1.3, 1.05, -3.4] as const,
