@@ -12,8 +12,15 @@ describe('resolveEntryComposition', () => {
   })
 
   it('uses the narrow composition below 768px', () => {
-    expect(resolveEntryComposition(767, 844).breakpoint).toBe('narrow')
+    const narrow = resolveEntryComposition(767, 844)
+    const desktop = resolveEntryComposition(768, 844)
+
+    expect(narrow.breakpoint).toBe('narrow')
     expect(resolveEntryComposition(768, 844).breakpoint).toBe('desktop')
+    expect(narrow.ready.cameraPosition[2]).toBeGreaterThan(2.5)
+    expect(narrow.entered.cameraPosition[2]).toBeGreaterThan(0.7)
+    expect(narrow.entered.cameraTarget[0]).toBeLessThan(1.05)
+    expect(narrow.monaPosition[0]).toBeLessThan(desktop.monaPosition[0])
   })
 
   it('keeps semantic endpoints independent from viewport height', () => {

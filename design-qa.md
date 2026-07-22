@@ -105,3 +105,55 @@ Evidence: `docs/superpowers/qa/mona-experience-phase-1-comparison-final.png` and
 - [x] Final unit, lint, build, E2E, and diff gates passed.
 
 final result: passed
+
+---
+
+# Mona Cinematic Entry Foundation — Phase 2 Design QA
+
+## Evidence
+
+- Browser: Codex in-app browser against `http://127.0.0.1:4173/`.
+- Desktop viewport: `1440 x 1024`, device scale factor `1`.
+- Narrow viewport: `390 x 844`, device scale factor `1`.
+- Loading: `docs/superpowers/qa/mona-phase-2-loading.png`.
+- Ready: `docs/superpowers/qa/mona-phase-2-ready.png`.
+- Mid-entry at approximately `1.55s`: `docs/superpowers/qa/mona-phase-2-mid-entry.png`.
+- Entered: `docs/superpowers/qa/mona-phase-2-entered.png`.
+- Narrow entered: `docs/superpowers/qa/mona-phase-2-mobile.png`.
+- Combined desktop comparison: `docs/superpowers/qa/mona-phase-2-comparison.png`.
+
+## Verified Experience
+
+- The first visible surface is the opaque forest loader; the previous white route-loading flash is gone.
+- The loader uses the requested animated circle, square, and triangle plus a semantic progress bar near the bottom.
+- The loading surface contracts into a full-height desktop Start rail and a full-width narrow-screen Start band.
+- The entire rail is one semantic button with hover, focus, active, disabled, and one-shot behavior.
+- Ready Mona is full-body, distant, back-facing, and staged from a low opening camera.
+- The `3.2s` runtime timeline moves the camera and raises its target while Mona turns from back to front.
+- The mid-entry capture shows the intended side profile between the two headings.
+- Left-side content remains visually absent until runtime motion reports completion.
+- Entered desktop Mona remains full-body in the right-hand region with clear separation from the headline.
+- Entered narrow Mona remains full-body without cropped head, feet, or arms; the compact text column no longer overlaps her.
+- One canvas persists from loading through entered.
+- Reduced motion reaches the final stable state without playing the full timeline.
+- `/lessons`, `/concepts`, and `/playground` remain independent of the Mona canvas.
+
+## Findings and Fixes
+
+### P1 — root route showed a white fallback before the full-screen loader
+
+Cause: `ExperiencePage` is intentionally lazy-loaded, but the root route reused the pale learning-route fallback. The visual sequence therefore began outside the approved loading surface.
+
+Fix: added a lightweight root-only fallback using the same loader surface, brand, geometry, copy, and progress treatment. Learning routes retain their compact fallback and remain route-split.
+
+### P1 — narrow entered composition cropped Mona and overlapped content
+
+Cause: the first narrow camera endpoint was too close and aimed too far toward Mona, enlarging her and pushing her right edge outside the viewport.
+
+Fix: added a regression contract for the narrow semantic camera endpoints, moved the ready camera farther back, moved the entered camera back, retargeted the final look direction, and tightened the content column. Final visual evidence shows full head, feet, and arms with clear text/avatar separation.
+
+## Foundation Boundary
+
+This foundation intentionally uses runtime root rotation plus restrained procedural breathing and weight transfer. The real `idle.vrma` and `turn.vrma` remain the next local Blender authoring pass, calibrated against these approved camera timings. The source `C:\Users\nekot\Desktop\Mona.vrm` was not overwritten, and nothing in this Phase 2 work is approved for public redistribution.
+
+Phase 2 foundation result: passed

@@ -28,13 +28,49 @@ function RouteLoader() {
   )
 }
 
+function ExperienceRouteLoader() {
+  return (
+    <main className="experience-shell" data-experience-phase="loading">
+      <section
+        className="experience-loader-surface"
+        data-testid="loader-surface"
+        aria-live="polite"
+      >
+        <header className="experience-brand" aria-label="ThreeLab">
+          <span className="experience-brand__mark">3D</span>
+          <span>ThreeLab</span>
+        </header>
+
+        <div className="experience-loader-shapes" aria-hidden="true">
+          <span className="experience-loader-shape experience-loader-shape--circle" />
+          <span className="experience-loader-shape experience-loader-shape--square" />
+          <span className="experience-loader-shape experience-loader-shape--triangle" />
+        </div>
+
+        <div className="experience-loading-copy">
+          <p className="experience-eyebrow">กำลังเตรียมโลก 3D</p>
+          <h1>กำลังพา Mona เข้าสู่ฉาก</h1>
+        </div>
+
+        <div className="experience-progress">
+          <div className="experience-progress__label">
+            <span>กำลังเปิดประสบการณ์</span>
+            <strong>0%</strong>
+          </div>
+          <progress max="100" value="0">0%</progress>
+        </div>
+      </section>
+    </main>
+  )
+}
+
 export function App() {
   return (
     <Routes>
       <Route
         index
         element={
-          <Suspense fallback={<RouteLoader />}>
+          <Suspense fallback={<ExperienceRouteLoader />}>
             <ExperiencePage />
           </Suspense>
         }

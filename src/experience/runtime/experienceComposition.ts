@@ -20,14 +20,14 @@ export function resolveEntryComposition(
     return {
       breakpoint: 'narrow',
       ready: {
-        cameraPosition: [0.1, 0.2, 1.2],
-        cameraTarget: [1.45, 1.5, -4],
+        cameraPosition: [0.1, 0.12, 3],
+        cameraTarget: [1.25, 1.55, -4],
       },
       entered: {
-        cameraPosition: [0.2, 0.95, -0.15],
-        cameraTarget: [1.05, 1.05, -4],
+        cameraPosition: [0.1, 0.95, 0.85],
+        cameraTarget: [0.95, 1.05, -4],
       },
-      monaPosition: [1.55, 0, -4],
+      monaPosition: [1.4, 0, -4],
     }
   }
 

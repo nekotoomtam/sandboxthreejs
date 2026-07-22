@@ -474,7 +474,7 @@ input[type='range'] {
   .experience-content {
     top: clamp(5.5rem, 15vh, 8rem);
     left: 1.25rem;
-    width: min(72vw, 22rem);
+    width: min(56vw, 17rem);
     transform: translateX(-1rem);
   }
 
