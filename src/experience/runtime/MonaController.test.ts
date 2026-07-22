@@ -37,22 +37,35 @@ describe('MonaController', () => {
   })
 
   it('optimizes and attaches Mona to the scene', () => {
+    const humanoidUpdate = vi.fn()
+    const springReset = vi.fn()
     const vrm = {
       scene: new THREE.Group(),
       humanoid: {
         getNormalizedBoneNode: vi.fn(),
-        update: vi.fn(),
+        update: humanoidUpdate,
       },
+      springBoneManager: { reset: springReset },
     } as unknown as VRM
     const scene = new THREE.Scene()
     const combineSkeletons = vi.spyOn(VRMUtils, 'combineSkeletons').mockImplementation(() => undefined)
     const combineMorphs = vi.spyOn(VRMUtils, 'combineMorphs').mockImplementation(() => undefined)
+    const attachToScene = vi.spyOn(scene, 'add')
+    const updateWorldMatrices = vi.spyOn(vrm.scene, 'updateMatrixWorld')
 
     new MonaController(vrm).attachTo(scene)
 
     expect(combineSkeletons).toHaveBeenCalledWith(vrm.scene)
     expect(combineMorphs).toHaveBeenCalledWith(vrm)
     expect(vrm.scene.parent).toBe(scene)
+    expect(updateWorldMatrices).toHaveBeenCalledWith(true)
+    expect(springReset).toHaveBeenCalledOnce()
+    expect(humanoidUpdate.mock.invocationCallOrder[0])
+      .toBeLessThan(attachToScene.mock.invocationCallOrder[0])
+    expect(attachToScene.mock.invocationCallOrder[0])
+      .toBeLessThan(updateWorldMatrices.mock.invocationCallOrder[0])
+    expect(updateWorldMatrices.mock.invocationCallOrder[0])
+      .toBeLessThan(springReset.mock.invocationCallOrder[0])
   })
 
   it('forwards animation deltas to the VRM', () => {
@@ -68,11 +81,14 @@ describe('MonaController', () => {
     const vrm = { scene: new THREE.Group() } as unknown as VRM
     const scene = new THREE.Scene()
     scene.add(vrm.scene)
+    const removeFromParent = vi.spyOn(vrm.scene, 'removeFromParent')
     const deepDispose = vi.spyOn(VRMUtils, 'deepDispose').mockImplementation(() => undefined)
 
     new MonaController(vrm).dispose()
 
     expect(vrm.scene.parent).toBeNull()
     expect(deepDispose).toHaveBeenCalledWith(vrm.scene)
+    expect(removeFromParent.mock.invocationCallOrder[0])
+      .toBeLessThan(deepDispose.mock.invocationCallOrder[0])
   })
 })

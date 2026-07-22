@@ -25,6 +25,8 @@ export class MonaController {
     VRMUtils.combineMorphs(this.vrm)
     this.applyInitialPose()
     scene.add(this.vrm.scene)
+    this.vrm.scene.updateMatrixWorld(true)
+    this.vrm.springBoneManager?.reset()
   }
 
   update(delta: number) {
