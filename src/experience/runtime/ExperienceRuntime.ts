@@ -1,7 +1,11 @@
 import * as THREE from 'three'
 import { createVrmLoader, loadMonaAsset } from './monaLoader'
 import { MonaController } from './MonaController'
-import { selectExperienceQuality, shouldShowStartMarker } from './experienceRuntime.helpers'
+import {
+  resolveExperienceComposition,
+  selectExperienceQuality,
+  shouldShowStartMarker,
+} from './experienceRuntime.helpers'
 
 export class ExperienceRuntime {
   private readonly scene = new THREE.Scene()
@@ -21,10 +25,9 @@ export class ExperienceRuntime {
   mount(container: HTMLElement): this {
     if (this.disposed) throw new Error('ExperienceRuntime is disposed.')
     this.container = container
-    this.scene.background = new THREE.Color(0x123d34)
-    this.scene.fog = new THREE.Fog(0x123d34, 8, 24)
+    this.scene.background = new THREE.Color(0x174c42)
+    this.scene.fog = new THREE.Fog(0x174c42, 8, 24)
     this.camera.position.set(0.3, 1.45, 6.4)
-    this.camera.lookAt(1.3, 1.05, -3.4)
 
     const coarsePointer = window.matchMedia('(pointer: coarse)').matches
     const quality = selectExperienceQuality({
@@ -41,18 +44,26 @@ export class ExperienceRuntime {
     container.replaceChildren(renderer.domElement)
     this.renderer = renderer
 
-    this.scene.add(new THREE.HemisphereLight(0xeaf7f1, 0x173f37, 2.2))
+    this.scene.add(new THREE.HemisphereLight(0xf4fbf8, 0x315f55, 2.35))
     const key = new THREE.DirectionalLight(0xffe2a7, 3.1)
     key.position.set(-3, 6, 4)
     this.scene.add(key)
-    const floor = new THREE.GridHelper(30, 30, 0x9ec8ba, 0x5f8c7e)
+    const floor = new THREE.Mesh(
+      new THREE.PlaneGeometry(30, 30),
+      new THREE.MeshStandardMaterial({ color: 0xb7d2c8, roughness: 0.96 }),
+    )
+    floor.rotation.x = -Math.PI / 2
+    floor.position.y = -0.02
     this.scene.add(floor)
+    const grid = new THREE.GridHelper(30, 30, 0xf5e7c8, 0x7fa99d)
+    grid.position.y = 0.01
+    this.scene.add(grid)
 
     const marker = new THREE.Group()
     const markerMaterial = new THREE.MeshStandardMaterial({
-      color: 0xf3a83b,
-      emissive: 0xc36d13,
-      emissiveIntensity: 0.8,
+      color: 0xffc15a,
+      emissive: 0xd57b1e,
+      emissiveIntensity: 1.05,
       roughness: 0.35,
     })
     marker.add(new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.08, 20, 72), markerMaterial))
@@ -113,9 +124,13 @@ export class ExperienceRuntime {
     if (!this.container || !this.renderer) return
     const width = Math.max(this.container.clientWidth, 1)
     const height = Math.max(this.container.clientHeight, 1)
+    const composition = resolveExperienceComposition(width)
     this.renderer.setSize(width, height, false)
     this.camera.aspect = width / height
+    this.camera.lookAt(...composition.cameraTarget)
     this.camera.updateProjectionMatrix()
+    this.startMarker?.position.set(...composition.markerPosition)
+    this.startMarker?.scale.setScalar(composition.markerScale)
   }
 
   private tick = () => {

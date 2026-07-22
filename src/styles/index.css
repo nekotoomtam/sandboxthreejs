@@ -172,8 +172,11 @@ input[type='range'] {
 
 .experience-ready {
   position: absolute;
-  left: clamp(2rem, 12vw, 11rem);
-  bottom: clamp(6rem, 17vh, 11rem);
+  left: 23.5%;
+  top: 58%;
+  width: min(14rem, 36vw);
+  transform: translate(-50%, -50%);
+  text-align: center;
 }
 
 .experience-ready p {
@@ -208,7 +211,11 @@ input[type='range'] {
 
 @media (max-width: 767px) {
   .experience-loading { top: 45%; }
-  .experience-ready { left: 50%; transform: translateX(-50%); text-align: center; }
+  .experience-ready {
+    left: 30%;
+    top: 68%;
+    width: min(14rem, calc(100vw - 2rem));
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

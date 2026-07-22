@@ -24,6 +24,22 @@ export function shouldShowStartMarker(ready: boolean, entered: boolean) {
   return ready && !entered
 }
 
+export function resolveExperienceComposition(width: number) {
+  if (width < 768) {
+    return {
+      cameraTarget: [1.3, 1.05, -3.4] as const,
+      markerPosition: [0.5, 0.5, 0.3] as const,
+      markerScale: 0.55,
+    }
+  }
+
+  return {
+    cameraTarget: [0, 1.05, -3.4] as const,
+    markerPosition: [-1.65, 0.78, 0.3] as const,
+    markerScale: 1,
+  }
+}
+
 export const NEUTRAL_STANDING_POSE = {
   leftUpperArm: { zDegrees: -68 },
   rightUpperArm: { zDegrees: 68 },

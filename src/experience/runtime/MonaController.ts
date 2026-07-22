@@ -11,7 +11,7 @@ export class MonaController {
 
   applyInitialPose() {
     this.vrm.scene.position.set(1.8, 0, -4)
-    this.vrm.scene.rotation.y = THREE.MathUtils.degToRad(-32)
+    this.vrm.scene.rotation.y = THREE.MathUtils.degToRad(-55)
 
     for (const [boneName, pose] of Object.entries(NEUTRAL_STANDING_POSE)) {
       const bone = this.vrm.humanoid.getNormalizedBoneNode(boneName as VRMHumanBoneName)

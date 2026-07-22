@@ -28,7 +28,7 @@ describe('MonaController', () => {
     controller.applyInitialPose()
 
     expect(vrm.scene.position.toArray()).toEqual([1.8, 0, -4])
-    expect(vrm.scene.rotation.y).toBeCloseTo(THREE.MathUtils.degToRad(-32))
+    expect(vrm.scene.rotation.y).toBeCloseTo(THREE.MathUtils.degToRad(-55))
     expect(bones.get('leftUpperArm')?.rotation.z).toBeCloseTo(THREE.MathUtils.degToRad(-68))
     expect(bones.get('rightUpperArm')?.rotation.z).toBeCloseTo(THREE.MathUtils.degToRad(68))
     expect(bones.get('leftLowerArm')?.rotation.z).toBeCloseTo(THREE.MathUtils.degToRad(-8))
