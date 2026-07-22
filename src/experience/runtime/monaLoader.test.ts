@@ -1,6 +1,7 @@
-import { describe, expect, it, vi } from 'vitest'
-import type { VRM } from '@pixiv/three-vrm'
-import { loadMonaAsset } from './monaLoader'
+import { VRMLoaderPlugin, type VRM } from '@pixiv/three-vrm'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { createVrmLoader, loadMonaAsset } from './monaLoader'
 
 function fakeLoader(result: { vrm?: VRM }, fail?: Error) {
   return {
@@ -14,6 +15,21 @@ function fakeLoader(result: { vrm?: VRM }, fail?: Error) {
 }
 
 describe('loadMonaAsset', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('registers the VRM loader plugin', () => {
+    const register = vi.spyOn(GLTFLoader.prototype, 'register')
+
+    const loader = createVrmLoader()
+    const pluginFactory = register.mock.calls.at(-1)?.[0]
+
+    expect(loader).toBeInstanceOf(GLTFLoader)
+    expect(register).toHaveBeenCalled()
+    expect(pluginFactory?.({ json: { extensionsUsed: [] } } as never)).toBeInstanceOf(VRMLoaderPlugin)
+  })
+
   it('reports download progress and resolves the parsed VRM', async () => {
     const vrm = {} as VRM
     const onProgress = vi.fn()
