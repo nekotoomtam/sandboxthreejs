@@ -47,7 +47,7 @@ The expanded state flow is:
 
 ```text
 loading -> revealing -> ready -> approaching -> revealing-content -> entered
-   |                                                               
+   |
    +---------------------------> error -> loading
 ```
 
