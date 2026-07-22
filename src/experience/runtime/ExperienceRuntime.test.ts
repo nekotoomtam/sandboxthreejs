@@ -9,11 +9,17 @@ const loaderSpies = vi.hoisted(() => ({
   loadMonaAsset: vi.fn(),
 }))
 
+const animationLoaderSpies = vi.hoisted(() => ({
+  createVrmaLoader: vi.fn(),
+  loadVrmaClip: vi.fn(),
+}))
+
 const controllerSpies = vi.hoisted(() => {
   const instances: Array<{
     attachTo: ReturnType<typeof vi.fn>
     setCompositionPosition: ReturnType<typeof vi.fn>
     applyEntrySample: ReturnType<typeof vi.fn>
+    setIdleClip: ReturnType<typeof vi.fn>
     update: ReturnType<typeof vi.fn>
     dispose: ReturnType<typeof vi.fn>
   }> = []
@@ -22,6 +28,7 @@ const controllerSpies = vi.hoisted(() => {
       attachTo: vi.fn(),
       setCompositionPosition: vi.fn(),
       applyEntrySample: vi.fn(),
+      setIdleClip: vi.fn(),
       update: vi.fn(),
       dispose: vi.fn(),
     }
@@ -32,17 +39,23 @@ const controllerSpies = vi.hoisted(() => {
 })
 
 vi.mock('./monaLoader', () => loaderSpies)
+vi.mock('./vrmaLoader', () => animationLoaderSpies)
 vi.mock('./MonaController', () => ({ MonaController: controllerSpies.constructor }))
 
 describe('ExperienceRuntime', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     controllerSpies.instances.length = 0
+    animationLoaderSpies.createVrmaLoader.mockReturnValue({})
+    animationLoaderSpies.loadVrmaClip.mockResolvedValue(
+      new THREE.AnimationClip('Mona_Idle_Calm', 5, []),
+    )
     controllerSpies.constructor.mockImplementation(function MonaControllerMock() {
       const controller = {
         attachTo: vi.fn(),
         setCompositionPosition: vi.fn(),
         applyEntrySample: vi.fn(),
+        setIdleClip: vi.fn(),
         update: vi.fn(),
         dispose: vi.fn(),
       }
@@ -64,7 +77,11 @@ describe('ExperienceRuntime', () => {
       }),
     )
     const runtime = new ExperienceRuntime()
-    const loading = runtime.load('/models/mona/Mona.vrm', vi.fn())
+    const loading = runtime.load(
+      '/models/mona/Mona.vrm',
+      '/models/mona/animations/idle.vrma',
+      vi.fn(),
+    )
 
     runtime.dispose()
     resolveVrm({} as VRM)
@@ -73,6 +90,54 @@ describe('ExperienceRuntime', () => {
     expect(controllerSpies.constructor).toHaveBeenCalledOnce()
     expect(controllerSpies.instances[0].dispose).toHaveBeenCalledOnce()
     expect(controllerSpies.instances[0].attachTo).not.toHaveBeenCalled()
+  })
+
+  it('loads and attaches the idle clip before reaching full progress', async () => {
+    const vrm = { scene: new THREE.Group() } as unknown as VRM
+    const clip = new THREE.AnimationClip('Mona_Idle_Calm', 5, [])
+    loaderSpies.loadMonaAsset.mockImplementationOnce(async (_loader, _url, progress) => {
+      progress(1)
+      return vrm
+    })
+    animationLoaderSpies.loadVrmaClip.mockImplementationOnce(
+      async (_loader, _url, _vrm, progress) => {
+        progress(1)
+        return clip
+      },
+    )
+    const progress = vi.fn()
+    const runtime = new ExperienceRuntime()
+
+    await runtime.load('/Mona.vrm', '/idle.vrma', progress)
+
+    expect(animationLoaderSpies.loadVrmaClip).toHaveBeenCalledWith(
+      animationLoaderSpies.createVrmaLoader.mock.results[0].value,
+      '/idle.vrma',
+      vrm,
+      expect.any(Function),
+    )
+    expect(controllerSpies.instances[0].setIdleClip).toHaveBeenCalledWith(clip)
+    expect(progress).toHaveBeenCalledWith(0.9)
+    expect(progress).toHaveBeenLastCalledWith(1)
+    runtime.dispose()
+  })
+
+  it('keeps the procedural idle when the local animation is unavailable', async () => {
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    loaderSpies.loadMonaAsset.mockResolvedValueOnce({ scene: new THREE.Group() } as VRM)
+    animationLoaderSpies.loadVrmaClip.mockRejectedValueOnce(new Error('404'))
+    const progress = vi.fn()
+    const runtime = new ExperienceRuntime()
+
+    await expect(runtime.load('/Mona.vrm', '/idle.vrma', progress)).resolves.toBeUndefined()
+
+    expect(controllerSpies.instances[0].setIdleClip).not.toHaveBeenCalled()
+    expect(warning).toHaveBeenCalledWith(
+      'Mona idle animation unavailable; using fallback.',
+      expect.any(Error),
+    )
+    expect(progress).toHaveBeenLastCalledWith(1)
+    runtime.dispose()
   })
 
   it('updates the frame timer before reading its delta', () => {

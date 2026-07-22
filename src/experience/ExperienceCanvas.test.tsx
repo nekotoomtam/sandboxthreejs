@@ -63,6 +63,7 @@ describe('ExperienceCanvas', () => {
     expect(runtimeSpies.constructor).toHaveBeenCalledOnce()
     expect(runtime.load).toHaveBeenCalledWith(
       '/models/mona/Mona.vrm',
+      '/models/mona/animations/idle.vrma',
       expect.any(Function),
     )
 
@@ -100,7 +101,7 @@ describe('ExperienceCanvas', () => {
     let reportRuntimeProgress: ((progress: number) => void) | undefined
     runtimeSpies.constructor.mockImplementationOnce(function ExperienceRuntimeMock() {
       const runtime = runtimeSpies.createRuntime()
-      runtime.load.mockImplementation((_url, onProgress) => {
+      runtime.load.mockImplementation((_modelUrl, _idleUrl, onProgress) => {
         reportRuntimeProgress = onProgress as (progress: number) => void
         return new Promise<void>(() => undefined)
       })

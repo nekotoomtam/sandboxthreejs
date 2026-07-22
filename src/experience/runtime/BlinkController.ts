@@ -11,8 +11,10 @@ export class BlinkController {
   private elapsed = 0
   private duration: number
   private doubleBlinkAvailable = true
+  private readonly random: () => number
 
-  constructor(private readonly random: () => number = Math.random) {
+  constructor(random: () => number = Math.random) {
+    this.random = random
     this.duration = this.nextWait()
   }
 

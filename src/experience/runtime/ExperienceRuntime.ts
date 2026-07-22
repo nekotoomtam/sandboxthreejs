@@ -9,6 +9,7 @@ import {
   type EntryTimelineSample,
 } from './entryTimeline'
 import { createVrmLoader, loadMonaAsset } from './monaLoader'
+import { createVrmaLoader, loadVrmaClip } from './vrmaLoader'
 import { MonaController } from './MonaController'
 import { selectExperienceQuality } from './experienceRuntime.helpers'
 
@@ -77,8 +78,14 @@ export class ExperienceRuntime {
     return this
   }
 
-  async load(url: string, onProgress: (progress: number) => void): Promise<void> {
-    const vrm = await loadMonaAsset(createVrmLoader(), url, onProgress)
+  async load(
+    modelUrl: string,
+    idleUrl: string,
+    onProgress: (progress: number) => void,
+  ): Promise<void> {
+    const vrm = await loadMonaAsset(createVrmLoader(), modelUrl, (progress) => {
+      onProgress(progress * 0.9)
+    })
     const mona = new MonaController(vrm)
     if (this.disposed) {
       mona.dispose()
@@ -89,6 +96,20 @@ export class ExperienceRuntime {
     this.mona.attachTo(this.scene)
     this.mona.setCompositionPosition(this.composition.monaPosition)
     this.mona.applyEntrySample(this.entrySample)
+
+    try {
+      const idleClip = await loadVrmaClip(createVrmaLoader(), idleUrl, vrm, (progress) => {
+        onProgress(0.9 + progress * 0.1)
+      })
+      if (this.disposed) return
+      this.mona.setIdleClip(idleClip)
+    } catch (error) {
+      if (!this.disposed) {
+        console.warn('Mona idle animation unavailable; using fallback.', error)
+      }
+    }
+
+    if (this.disposed) return
     this.mona.update(0)
     this.renderer?.render(this.scene, this.camera)
     onProgress(1)

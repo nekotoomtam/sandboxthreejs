@@ -34,9 +34,13 @@ export function ExperienceCanvas({
     try {
       runtime.mount(container)
       runtimeRef.current = runtime
-      runtime.load('/models/mona/Mona.vrm', (progress) => {
-        if (active) onProgress(progress)
-      }).then(
+      runtime.load(
+        '/models/mona/Mona.vrm',
+        '/models/mona/animations/idle.vrma',
+        (progress) => {
+          if (active) onProgress(progress)
+        },
+      ).then(
         () => {
           if (active) onReady()
         },
