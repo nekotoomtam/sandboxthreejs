@@ -1,5 +1,10 @@
-import { VRMAnimation, VRMAnimationLoaderPlugin } from '@pixiv/three-vrm-animation'
+import {
+  VRMAnimation,
+  VRMAnimationLoaderPlugin,
+  VRMLookAtQuaternionProxy,
+} from '@pixiv/three-vrm-animation'
 import type { VRM } from '@pixiv/three-vrm'
+import { Group } from 'three'
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { createVrmaLoader, loadVrmaClip } from './vrmaLoader'
@@ -52,6 +57,29 @@ describe('vrmaLoader', () => {
     expect(onProgress).toHaveBeenCalledWith(0.46)
     expect(clip.name).toBe('Mona_Idle_Calm')
     expect(clip.duration).toBe(5)
+  })
+
+  it('creates the named LookAt proxy before converting a clip', async () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined)
+    const scene = new Group()
+    const vrm = {
+      scene,
+      meta: { metaVersion: '1' },
+      humanoid: {},
+      expressionManager: undefined,
+      lookAt: {},
+    } as unknown as VRM
+
+    await loadVrmaClip(
+      fakeLoader({ vrmAnimations: [emptyAnimation()] }) as never,
+      '/models/mona/animations/idle.vrma',
+      vrm,
+      vi.fn(),
+    )
+
+    const proxy = scene.children.find((child) => child instanceof VRMLookAtQuaternionProxy)
+    expect(proxy?.name).toBe('VRMLookAtQuaternionProxy')
+    expect(warn).not.toHaveBeenCalled()
   })
 
   it('rejects a file without VRM animation data', async () => {
