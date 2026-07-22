@@ -23,18 +23,18 @@ describe('experience state machine', () => {
     ).toEqual(INITIAL_EXPERIENCE_STATE)
   })
 
-  it('moves from ready through entering to entered', () => {
-    const ready = reduceExperience(INITIAL_EXPERIENCE_STATE, {
-      type: 'LOAD_SUCCEEDED',
-    })
-    const entering = reduceExperience(ready, { type: 'START_REQUESTED' })
-    const entered = reduceExperience(entering, {
-      type: 'ENTRY_TRANSITION_FINISHED',
-    })
+  it('moves through reveal, approach, and content only on matching completion events', () => {
+    const revealing = reduceExperience(INITIAL_EXPERIENCE_STATE, { type: 'SCENE_READY' })
+    const ready = reduceExperience(revealing, { type: 'LOADER_REVEAL_FINISHED' })
+    const approaching = reduceExperience(ready, { type: 'START_REQUESTED' })
+    const content = reduceExperience(approaching, { type: 'ENTRY_MOTION_FINISHED' })
+    const entered = reduceExperience(content, { type: 'CONTENT_REVEAL_FINISHED' })
 
+    expect(revealing.phase).toBe('revealing')
     expect(ready.phase).toBe('ready')
-    expect(entering.phase).toBe('entering')
-    expect(reduceExperience(entering, { type: 'START_REQUESTED' })).toBe(entering)
+    expect(approaching.phase).toBe('approaching')
+    expect(reduceExperience(approaching, { type: 'START_REQUESTED' })).toBe(approaching)
+    expect(content.phase).toBe('revealing-content')
     expect(entered.phase).toBe('entered')
   })
 
