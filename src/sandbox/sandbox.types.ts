@@ -12,6 +12,10 @@ export type SandboxObjectDefinition = {
     readonly color: string
     readonly roughness?: number
     readonly metalness?: number
+    readonly opacity?: number
+    readonly transparent?: boolean
+    readonly wireframe?: boolean
+    readonly depthWrite?: boolean
   }
   readonly position?: Vector3Tuple
   readonly rotation?: Vector3Tuple

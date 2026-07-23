@@ -29,6 +29,20 @@ function createGeometry(definition: SandboxObjectDefinition) {
   return new THREE.BoxGeometry(...geometry.size)
 }
 
+export function materialParameters(
+  material: SandboxObjectDefinition['material'],
+): THREE.MeshStandardMaterialParameters {
+  return {
+    color: material.color,
+    roughness: material.roughness ?? 0.5,
+    metalness: material.metalness ?? 0,
+    opacity: material.opacity ?? 1,
+    transparent: material.transparent ?? false,
+    wireframe: material.wireframe ?? false,
+    depthWrite: material.depthWrite ?? true,
+  }
+}
+
 export class SandboxRuntime {
   private readonly definition: SandboxSceneDefinition
   private scene?: THREE.Scene
@@ -86,11 +100,9 @@ export class SandboxRuntime {
     scene.add(fillLight)
 
     for (const objectDefinition of this.definition.objects) {
-      const material = new THREE.MeshStandardMaterial({
-        color: objectDefinition.material.color,
-        roughness: objectDefinition.material.roughness ?? 0.5,
-        metalness: objectDefinition.material.metalness ?? 0,
-      })
+      const material = new THREE.MeshStandardMaterial(
+        materialParameters(objectDefinition.material),
+      )
       const mesh = new THREE.Mesh(createGeometry(objectDefinition), material)
       mesh.name = objectDefinition.id
       this.applyInitialTransform(mesh, objectDefinition)
