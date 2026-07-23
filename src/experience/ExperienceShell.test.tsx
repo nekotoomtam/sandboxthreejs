@@ -89,10 +89,9 @@ describe('ExperienceShell', () => {
     fireEvent.transitionEnd(content)
 
     expect(screen.getByRole('main')).toHaveAttribute('data-experience-phase', 'entered')
-    expect(screen.getByRole('link', { name: 'สำรวจเส้นทางเรียน' })).toHaveAttribute(
-      'href',
-      '/worlds',
-    )
+    const explore = screen.getByRole('button', { name: 'สำรวจเส้นทางเรียน' })
+    fireEvent.click(explore)
+    expect(latestCanvasProps?.worldEntryActive).toBe(true)
     expect(manualCanvasMountAttempts).toEqual([0])
     expect(manualCanvasUnmountAttempts).toEqual([])
   })

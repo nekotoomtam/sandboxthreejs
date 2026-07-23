@@ -4,25 +4,32 @@ import { ExperienceRuntime } from './runtime/ExperienceRuntime'
 export type ExperienceCanvasProps = {
   attempt: number
   entryActive: boolean
+  worldEntryActive: boolean
   onProgress: (progress: number) => void
   onReady: () => void
   onEntryComplete: () => void
+  onWorldEntryComplete: () => void
   onError: (message: string) => void
 }
 
 export function ExperienceCanvas({
   attempt,
   entryActive,
+  worldEntryActive,
   onProgress,
   onReady,
   onEntryComplete,
+  onWorldEntryComplete,
   onError,
 }: ExperienceCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<ExperienceRuntime>(null)
   const entryRequestedRef = useRef(false)
+  const worldEntryRequestedRef = useRef(false)
   const onEntryCompleteRef = useRef(onEntryComplete)
+  const onWorldEntryCompleteRef = useRef(onWorldEntryComplete)
   onEntryCompleteRef.current = onEntryComplete
+  onWorldEntryCompleteRef.current = onWorldEntryComplete
 
   useEffect(() => {
     const container = containerRef.current
@@ -30,6 +37,7 @@ export function ExperienceCanvas({
     let active = true
     const runtime = new ExperienceRuntime()
     entryRequestedRef.current = false
+    worldEntryRequestedRef.current = false
 
     try {
       runtime.mount(container)
@@ -70,6 +78,20 @@ export function ExperienceCanvas({
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
     runtime.playEntry(() => onEntryCompleteRef.current(), reducedMotion)
   }, [attempt, entryActive])
+
+  useEffect(() => {
+    if (!worldEntryActive || worldEntryRequestedRef.current) return
+    const runtime = runtimeRef.current
+    if (!runtime) return
+
+    worldEntryRequestedRef.current = true
+    const reducedMotion =
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    runtime.playWorldEntry(
+      () => onWorldEntryCompleteRef.current(),
+      reducedMotion,
+    )
+  }, [attempt, worldEntryActive])
 
   return <div ref={containerRef} className="experience-canvas" aria-label="ฉาก Three.js ของ Mona" />
 }

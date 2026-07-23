@@ -5,6 +5,8 @@ type Props = {
   state: ExperienceState
   onStart: () => void
   onRetry: () => void
+  onExplore: () => void
+  enteringWorld: boolean
   onRevealFinished: () => void
   onContentRevealFinished: () => void
 }
@@ -13,6 +15,8 @@ export function ExperienceOverlay({
   state,
   onStart,
   onRetry,
+  onExplore,
+  enteringWorld,
   onRevealFinished,
   onContentRevealFinished,
 }: Props) {
@@ -33,7 +37,11 @@ export function ExperienceOverlay({
   }
 
   return (
-    <div className={`experience-overlay experience-overlay--${state.phase}`}>
+    <div
+      className={`experience-overlay experience-overlay--${state.phase}${
+        enteringWorld ? ' experience-overlay--entering-world' : ''
+      }`}
+    >
       {showsLoader && (
         <section
           className="experience-loader-surface"
@@ -104,9 +112,14 @@ export function ExperienceOverlay({
           <p className="experience-eyebrow">THREELAB INTERACTIVE</p>
           <h1>เรียนรู้ Three.js ผ่านโลกที่โต้ตอบได้</h1>
           <p>ทดลอง สังเกต และสร้างด้วยตัวคุณเอง</p>
-          <a href="/worlds" tabIndex={showsContent ? 0 : -1}>
+          <button
+            type="button"
+            onClick={onExplore}
+            disabled={enteringWorld}
+            tabIndex={showsContent ? 0 : -1}
+          >
             สำรวจเส้นทางเรียน
-          </a>
+          </button>
         </section>
       )}
 

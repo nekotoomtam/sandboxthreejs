@@ -18,9 +18,10 @@ test('reveals Mona through one persistent cinematic canvas', async ({ page }) =>
   await expect(page.getByRole('heading', { level: 1 })).toContainText('เรียนรู้ Three.js')
   await expect(page.locator('[data-experience-canvas="true"]')).toHaveCount(1)
 
-  await page.getByRole('link', { name: 'สำรวจเส้นทางเรียน' }).click()
-  await expect(page).toHaveURL(/\/worlds$/)
-  await expect(page.getByRole('link', { name: /เปิดบท/ })).toHaveCount(3)
+  await page.getByRole('button', { name: 'สำรวจเส้นทางเรียน' }).click()
+  await expect(page).toHaveURL(/\/worlds\/foundations$/, { timeout: 5_000 })
+  await expect(page.locator('[data-world-journey-canvas="true"]')).toHaveCount(1)
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('พื้นฐาน')
 })
 
 test('honors reduced motion and reaches the stable entered state', async ({ page }) => {
@@ -43,4 +44,15 @@ test('keeps learning routes independent from the Mona canvas', async ({ page }) 
     await page.goto(route)
     await expect(page.locator('[data-experience-canvas="true"]')).toHaveCount(0)
   }
+})
+
+test('travels from one chapter planet to the next on one journey canvas', async ({ page }) => {
+  await page.goto('/worlds/foundations')
+  await expect(page.locator('[data-world-journey-canvas="true"]')).toHaveCount(1)
+
+  await page.getByRole('button', { name: /ดาวถัดไป/ }).click()
+
+  await expect(page).toHaveURL(/\/worlds\/controls$/)
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('การควบคุม')
+  await expect(page.locator('[data-world-journey-canvas="true"]')).toHaveCount(1)
 })

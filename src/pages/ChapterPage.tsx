@@ -1,32 +1,44 @@
-import { Link, Navigate, useParams } from 'react-router'
-import { PlanetVisual } from '../components/worlds/PlanetVisual'
-import { getWorldById } from '../worlds/world.registry'
+import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { WorldJourneyCanvas } from '../worlds/WorldJourneyCanvas'
+import { getWorldById, worldCatalog } from '../worlds/world.registry'
 
 export function ChapterPage() {
   const { worldId } = useParams()
+  const navigate = useNavigate()
   const world = getWorldById(worldId)
 
-  if (!world) return <Navigate to="/worlds" replace />
+  if (!world) return <Navigate to="/worlds/foundations" replace />
+
+  const worldIndex = worldCatalog.findIndex((candidate) => candidate.id === world.id)
+  const previousWorld = worldCatalog[worldIndex - 1]
+  const nextWorld = worldCatalog[worldIndex + 1]
+
+  const travel = (nextId: string) => {
+    navigate(`/worlds/${nextId}`)
+  }
 
   return (
     <main
-      className={`chapter-overview chapter-overview--${world.id}`}
+      className="world-journey"
+      data-world-id={world.id}
       style={{ '--world-accent': world.accent } as React.CSSProperties}
     >
-      <section className="chapter-overview__content">
-        <Link className="world-back-link" to="/worlds">
-          ← กลับไปแผนที่
-        </Link>
-        <p className="chapter-overview__eyebrow">{world.eyebrow}</p>
-        <h1>{world.title}</h1>
-        <p className="chapter-overview__description">{world.description}</p>
+      <WorldJourneyCanvas worldId={world.id} />
 
-        <div className="chapter-lesson-list">
+      <section className="world-journey__content" key={world.id}>
+        <Link className="world-journey__home" to="/">
+          ← กลับไปหา Mona
+        </Link>
+        <p className="world-journey__eyebrow">{world.eyebrow}</p>
+        <h1>{world.title}</h1>
+        <p className="world-journey__description">{world.description}</p>
+
+        <div className="world-journey__lessons">
           {world.lessons.map((lesson, index) =>
             lesson.status === 'available' && lesson.lessonId ? (
               <Link
                 key={lesson.id}
-                className="chapter-lesson chapter-lesson--available"
+                className="world-journey-lesson world-journey-lesson--available"
                 to={`/lessons/${lesson.lessonId}`}
               >
                 <span>{String(index + 1).padStart(2, '0')}</span>
@@ -39,7 +51,7 @@ export function ChapterPage() {
             ) : (
               <div
                 key={lesson.id}
-                className="chapter-lesson chapter-lesson--locked"
+                className="world-journey-lesson world-journey-lesson--locked"
                 aria-disabled="true"
               >
                 <span>{String(index + 1).padStart(2, '0')}</span>
@@ -54,12 +66,20 @@ export function ChapterPage() {
         </div>
       </section>
 
-      <PlanetVisual
-        className="chapter-overview__planet"
-        src={world.imageSrc}
-        alt={`ดาวบท ${world.title}`}
-        variant="chapter"
-      />
+      <nav className="world-journey__switcher" aria-label="เปลี่ยนดาวบทเรียน">
+        {previousWorld && (
+          <button type="button" onClick={() => travel(previousWorld.id)}>
+            <span>← ดาวก่อนหน้า</span>
+            <strong>{String(previousWorld.order).padStart(2, '0')}</strong>
+          </button>
+        )}
+        {nextWorld && (
+          <button type="button" onClick={() => travel(nextWorld.id)}>
+            <span>ดาวถัดไป →</span>
+            <strong>{String(nextWorld.order).padStart(2, '0')}</strong>
+          </button>
+        )}
+      </nav>
     </main>
   )
 }

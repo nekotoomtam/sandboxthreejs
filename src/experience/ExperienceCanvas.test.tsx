@@ -9,6 +9,7 @@ const runtimeSpies = vi.hoisted(() => {
     mount: ReturnType<typeof vi.fn>
     load: ReturnType<typeof vi.fn>
     playEntry: ReturnType<typeof vi.fn>
+    playWorldEntry: ReturnType<typeof vi.fn>
     dispose: ReturnType<typeof vi.fn>
   }> = []
 
@@ -17,6 +18,7 @@ const runtimeSpies = vi.hoisted(() => {
       mount: vi.fn(),
       load: vi.fn().mockResolvedValue(undefined),
       playEntry: vi.fn(),
+      playWorldEntry: vi.fn(),
       dispose: vi.fn(),
     }
     runtime.mount.mockReturnValue(runtime)
@@ -52,10 +54,16 @@ describe('ExperienceCanvas', () => {
       onProgress: vi.fn(),
       onReady,
       onEntryComplete: vi.fn(),
+      onWorldEntryComplete: vi.fn(),
       onError: vi.fn(),
     }
     const { rerender, unmount } = render(
-      <ExperienceCanvas attempt={0} entryActive={false} {...callbacks} />,
+      <ExperienceCanvas
+        attempt={0}
+        entryActive={false}
+        worldEntryActive={false}
+        {...callbacks}
+      />,
     )
 
     await waitFor(() => expect(onReady).toHaveBeenCalledOnce())
@@ -67,11 +75,25 @@ describe('ExperienceCanvas', () => {
       expect.any(Function),
     )
 
-    rerender(<ExperienceCanvas attempt={0} entryActive {...callbacks} />)
+    rerender(
+      <ExperienceCanvas
+        attempt={0}
+        entryActive
+        worldEntryActive={false}
+        {...callbacks}
+      />,
+    )
     expect(runtimeSpies.constructor).toHaveBeenCalledOnce()
     expect(runtime.playEntry).toHaveBeenCalledWith(expect.any(Function), false)
 
-    rerender(<ExperienceCanvas attempt={0} entryActive {...callbacks} />)
+    rerender(
+      <ExperienceCanvas
+        attempt={0}
+        entryActive
+        worldEntryActive={false}
+        {...callbacks}
+      />,
+    )
     expect(runtime.playEntry).toHaveBeenCalledOnce()
 
     unmount()
@@ -83,14 +105,17 @@ describe('ExperienceCanvas', () => {
       onProgress: vi.fn(),
       onReady: vi.fn(),
       onEntryComplete: vi.fn(),
+      onWorldEntryComplete: vi.fn(),
       onError: vi.fn(),
     }
     const { rerender } = render(
-      <ExperienceCanvas attempt={0} entryActive {...callbacks} />,
+      <ExperienceCanvas attempt={0} entryActive worldEntryActive={false} {...callbacks} />,
     )
     await waitFor(() => expect(callbacks.onReady).toHaveBeenCalledOnce())
 
-    rerender(<ExperienceCanvas attempt={1} entryActive {...callbacks} />)
+    rerender(
+      <ExperienceCanvas attempt={1} entryActive worldEntryActive={false} {...callbacks} />,
+    )
     await waitFor(() => expect(callbacks.onReady).toHaveBeenCalledTimes(2))
 
     expect(runtimeSpies.runtimes).toHaveLength(2)
@@ -112,9 +137,11 @@ describe('ExperienceCanvas', () => {
       <ExperienceCanvas
         attempt={0}
         entryActive={false}
+        worldEntryActive={false}
         onProgress={onProgress}
         onReady={vi.fn()}
         onEntryComplete={vi.fn()}
+        onWorldEntryComplete={vi.fn()}
         onError={vi.fn()}
       />,
     )
@@ -139,9 +166,11 @@ describe('ExperienceCanvas', () => {
       <ExperienceCanvas
         attempt={0}
         entryActive={false}
+        worldEntryActive={false}
         onProgress={vi.fn()}
         onReady={vi.fn()}
         onEntryComplete={vi.fn()}
+        onWorldEntryComplete={vi.fn()}
         onError={onError}
       />,
     )
