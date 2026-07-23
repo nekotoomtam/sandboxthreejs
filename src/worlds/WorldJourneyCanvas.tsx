@@ -4,11 +4,14 @@ import { WorldJourneyRuntime } from './runtime/WorldJourneyRuntime'
 
 type Props = {
   worldId: string
+  onReady?: () => void
 }
 
-export function WorldJourneyCanvas({ worldId }: Props) {
+export function WorldJourneyCanvas({ worldId, onReady }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<WorldJourneyRuntime>(null)
+  const onReadyRef = useRef(onReady)
+  onReadyRef.current = onReady
   const initialIndexRef = useRef(
     Math.max(0, worldCatalog.findIndex((world) => world.id === worldId)),
   )
@@ -16,7 +19,11 @@ export function WorldJourneyCanvas({ worldId }: Props) {
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
-    const runtime = new WorldJourneyRuntime().mount(container, initialIndexRef.current)
+    const runtime = new WorldJourneyRuntime().mount(
+      container,
+      initialIndexRef.current,
+      () => onReadyRef.current?.(),
+    )
     runtimeRef.current = runtime
     return () => {
       runtime.dispose()

@@ -21,7 +21,7 @@ export class WorldJourneyRuntime {
   private travelDuration = 1.65
   private traveling = false
 
-  mount(container: HTMLElement, initialWorldIndex: number): this {
+  mount(container: HTMLElement, initialWorldIndex: number, onReady?: () => void): this {
     this.container = container
     this.currentCameraX = initialWorldIndex * WORLD_SPACING
     this.travelFromX = this.currentCameraX
@@ -57,7 +57,7 @@ export class WorldJourneyRuntime {
     this.scene.add(floor)
 
     this.scene.add(this.planets)
-    this.loadPlanets()
+    this.loadPlanets(initialWorldIndex, onReady)
     this.applyCamera()
 
     this.resizeObserver = new ResizeObserver(() => this.resize())
@@ -99,26 +99,42 @@ export class WorldJourneyRuntime {
     this.scene.clear()
   }
 
-  private loadPlanets(): void {
+  private loadPlanets(initialWorldIndex: number, onReady?: () => void): void {
     const loader = new THREE.TextureLoader()
+    let readyReported = false
+    const reportReady = () => {
+      if (readyReported) return
+      readyReported = true
+      this.renderer?.render(this.scene, this.camera)
+      onReady?.()
+    }
+
     worldCatalog.forEach((world, index) => {
-      loader.load(world.imageSrc, (texture) => {
-        if (this.disposed) {
-          texture.dispose()
-          return
-        }
-        texture.colorSpace = THREE.SRGBColorSpace
-        const material = new THREE.MeshBasicMaterial({
-          map: texture,
-          transparent: true,
-          depthWrite: false,
-          toneMapped: false,
-        })
-        const planet = new THREE.Mesh(new THREE.PlaneGeometry(11.8, 11.8), material)
-        planet.position.set(index * WORLD_SPACING + 6.55, 1.1, 0)
-        planet.renderOrder = 1
-        this.planets.add(planet)
-      })
+      loader.load(
+        world.imageSrc,
+        (texture) => {
+          if (this.disposed) {
+            texture.dispose()
+            return
+          }
+          texture.colorSpace = THREE.SRGBColorSpace
+          const material = new THREE.MeshBasicMaterial({
+            map: texture,
+            transparent: true,
+            depthWrite: false,
+            toneMapped: false,
+          })
+          const planet = new THREE.Mesh(new THREE.PlaneGeometry(11.8, 11.8), material)
+          planet.position.set(index * WORLD_SPACING + 6.55, 1.1, 0)
+          planet.renderOrder = 1
+          this.planets.add(planet)
+          if (index === initialWorldIndex) reportReady()
+        },
+        undefined,
+        () => {
+          if (index === initialWorldIndex) reportReady()
+        },
+      )
     })
   }
 

@@ -5,9 +5,13 @@ import { INITIAL_EXPERIENCE_STATE, reduceExperience } from './experienceMachine'
 
 type Props = {
   CanvasComponent?: ComponentType<ExperienceCanvasProps>
+  onEnterWorld?: () => void
 }
 
-export function ExperienceShell({ CanvasComponent = ExperienceCanvas }: Props) {
+export function ExperienceShell({
+  CanvasComponent = ExperienceCanvas,
+  onEnterWorld = () => window.location.assign('/worlds/foundations'),
+}: Props) {
   const [state, dispatch] = useReducer(reduceExperience, INITIAL_EXPERIENCE_STATE)
   const [enteringWorld, setEnteringWorld] = useState(false)
   const onProgress = useCallback((progress: number) => {
@@ -22,8 +26,8 @@ export function ExperienceShell({ CanvasComponent = ExperienceCanvas }: Props) {
     dispatch({ type: 'LOAD_FAILED', message })
   }, [])
   const onWorldEntryComplete = useCallback(() => {
-    window.location.assign('/worlds/foundations')
-  }, [])
+    onEnterWorld()
+  }, [onEnterWorld])
 
   return (
     <main className="experience-shell" data-experience-phase={state.phase}>

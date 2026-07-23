@@ -151,6 +151,281 @@ input[type='range'] {
   );
 }
 
+.journey-loader {
+  --journey-glow: #b6d9ff;
+  --journey-core: #f7fbff;
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: clamp(2.2rem, 5vh, 3.5rem);
+  overflow: hidden;
+  padding: 2rem;
+  color: #f7f8ff;
+  text-align: center;
+  pointer-events: auto;
+  transition: opacity 240ms ease;
+}
+
+.journey-loader--travel {
+  position: fixed;
+  background:
+    radial-gradient(circle at 50% 47%, rgba(72, 93, 143, 0.2), transparent 27%),
+    rgba(4, 5, 11, 0.98);
+  animation: journey-curtain-in 520ms ease-out both;
+}
+
+.journey-loader--instant {
+  animation: none;
+}
+
+.experience-overlay--revealing .journey-loader--boot {
+  opacity: 0;
+}
+
+.journey-loader__orb {
+  position: relative;
+  width: clamp(7.5rem, 12vw, 10.5rem);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  isolation: isolate;
+  filter: drop-shadow(0 0 2.2rem rgba(164, 201, 255, 0.32));
+  animation: journey-orb-breathe 2.05s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.journey-loader__orb::before,
+.journey-loader__orb::after,
+.journey-loader__halo,
+.journey-loader__core {
+  position: absolute;
+  border-radius: 50%;
+  content: '';
+}
+
+.journey-loader__orb::before {
+  inset: 7%;
+  z-index: -1;
+  background:
+    conic-gradient(
+      from 20deg,
+      rgba(113, 151, 255, 0.05),
+      rgba(209, 225, 255, 0.82),
+      rgba(142, 110, 255, 0.38),
+      rgba(113, 151, 255, 0.05)
+    );
+  filter: blur(0.3rem);
+  animation: journey-orb-turn 5.8s linear infinite;
+}
+
+.journey-loader__orb::after {
+  inset: 24%;
+  background: #ffffff;
+  filter: blur(1.3rem);
+  opacity: 0.68;
+}
+
+.journey-loader__halo {
+  inset: -8%;
+  z-index: -2;
+  border: 1px solid rgba(188, 213, 255, 0.34);
+  background: radial-gradient(
+    circle,
+    rgba(181, 209, 255, 0.13) 0 38%,
+    rgba(114, 139, 220, 0.15) 52%,
+    transparent 70%
+  );
+  box-shadow:
+    0 0 2.5rem rgba(124, 159, 255, 0.27),
+    inset 0 0 2.2rem rgba(206, 222, 255, 0.16);
+  animation: journey-halo-breathe 2.05s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+.journey-loader__core {
+  inset: 18%;
+  background:
+    radial-gradient(circle at 38% 34%, #ffffff 0 8%, transparent 22%),
+    radial-gradient(circle, #eef6ff 0 23%, #a9c8fc 53%, #62599e 78%, transparent 79%);
+  box-shadow:
+    0 0 1rem rgba(228, 239, 255, 0.8),
+    0 0 3.2rem rgba(114, 151, 244, 0.65);
+}
+
+.journey-loader__copy {
+  display: grid;
+  width: min(27rem, calc(100vw - 3rem));
+  justify-items: center;
+}
+
+.journey-loader__copy p {
+  margin: 0 0 0.55rem;
+  color: rgba(201, 216, 255, 0.72);
+  font-size: 0.72rem;
+  font-weight: 850;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.journey-loader__copy strong {
+  font-size: clamp(1.05rem, 2.1vw, 1.45rem);
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.journey-loader__progress {
+  display: block;
+  width: min(20rem, 68vw);
+  height: 0.28rem;
+  margin: 1.3rem 0 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  appearance: none;
+  background: rgba(208, 222, 255, 0.13);
+}
+
+.journey-loader__progress::-webkit-progress-bar {
+  border-radius: inherit;
+  background: rgba(208, 222, 255, 0.13);
+}
+
+.journey-loader__progress::-webkit-progress-value {
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7474bc, #d8e9ff);
+  box-shadow: 0 0 1rem rgba(174, 207, 255, 0.8);
+  transition: width 180ms ease;
+}
+
+.journey-loader__progress::-moz-progress-bar {
+  border-radius: inherit;
+  background: linear-gradient(90deg, #7474bc, #d8e9ff);
+  box-shadow: 0 0 1rem rgba(174, 207, 255, 0.8);
+}
+
+.journey-loader__progress:not([value]) {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 12%,
+      #9bbdff 46%,
+      #f1f7ff 56%,
+      transparent 88% 100%
+    )
+    100% 0 / 220% 100%;
+  animation: journey-progress-travel 1.35s ease-in-out infinite;
+}
+
+.journey-loader__progress:not([value])::-webkit-progress-bar {
+  background:
+    linear-gradient(
+      90deg,
+      transparent 0 12%,
+      #9bbdff 46%,
+      #f1f7ff 56%,
+      transparent 88% 100%
+    )
+    100% 0 / 220% 100%;
+  animation: journey-progress-travel 1.35s ease-in-out infinite;
+}
+
+.journey-loader__copy small {
+  min-height: 1.1rem;
+  margin-top: 0.65rem;
+  color: rgba(222, 229, 248, 0.46);
+  font-size: 0.7rem;
+}
+
+.journey-loader--exiting {
+  animation: journey-curtain-out 680ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.journey-loader--exiting .journey-loader__orb {
+  animation: journey-orb-bloom 680ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.journey-loader--exiting .journey-loader__copy {
+  animation: journey-copy-out 260ms ease forwards;
+}
+
+@keyframes journey-curtain-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes journey-curtain-out {
+  0%,
+  42% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes journey-orb-breathe {
+  0%,
+  100% {
+    transform: scale(0.82);
+    filter: drop-shadow(0 0 1.5rem rgba(164, 201, 255, 0.24));
+  }
+  50% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 3.1rem rgba(164, 201, 255, 0.5));
+  }
+}
+
+@keyframes journey-halo-breathe {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes journey-orb-turn {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes journey-progress-travel {
+  0% {
+    background-position: 110% 0;
+  }
+  100% {
+    background-position: -110% 0;
+  }
+}
+
+@keyframes journey-orb-bloom {
+  0% {
+    opacity: 1;
+    transform: scale(0.9);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(1.35);
+    filter: drop-shadow(0 0 5rem rgba(220, 234, 255, 0.9));
+  }
+  100% {
+    opacity: 0;
+    transform: scale(4.6);
+  }
+}
+
+@keyframes journey-copy-out {
+  to {
+    opacity: 0;
+    transform: translateY(0.65rem);
+  }
+}
+
 .experience-brand {
   position: absolute;
   top: clamp(1.25rem, 3vw, 2.25rem);
@@ -534,6 +809,15 @@ input[type='range'] {
 @media (prefers-reduced-motion: reduce) {
   .experience-loader-surface {
     transition-duration: 80ms;
+  }
+
+  .journey-loader,
+  .journey-loader__orb,
+  .journey-loader__halo,
+  .journey-loader__orb::before,
+  .journey-loader__progress {
+    animation-duration: 1ms;
+    animation-iteration-count: 1;
   }
 
   .experience-loader-shape {

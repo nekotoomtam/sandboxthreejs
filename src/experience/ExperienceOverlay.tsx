@@ -1,4 +1,5 @@
 import type { TransitionEvent } from 'react'
+import { JourneyLoader } from '../components/JourneyLoader'
 import type { ExperienceState } from './experienceMachine'
 
 type Props = {
@@ -20,7 +21,6 @@ export function ExperienceOverlay({
   onRevealFinished,
   onContentRevealFinished,
 }: Props) {
-  const percent = Math.round(state.progress * 100)
   const showsLoader = state.phase === 'loading' || state.phase === 'revealing'
   const showsRail = state.phase === 'ready' || state.phase === 'approaching'
   const showsContent = state.phase === 'revealing-content' || state.phase === 'entered'
@@ -49,31 +49,7 @@ export function ExperienceOverlay({
           aria-live="polite"
           onTransitionEnd={handleLoaderTransition}
         >
-          <header className="experience-brand" aria-label="ThreeLab">
-            <span className="experience-brand__mark">3D</span>
-            <span>ThreeLab</span>
-          </header>
-
-          <div className="experience-loader-shapes" aria-hidden="true">
-            <span className="experience-loader-shape experience-loader-shape--circle" />
-            <span className="experience-loader-shape experience-loader-shape--square" />
-            <span className="experience-loader-shape experience-loader-shape--triangle" />
-          </div>
-
-          <div className="experience-loading-copy">
-            <p className="experience-eyebrow">กำลังเตรียมโลก 3D</p>
-            <h1>กำลังพา Mona เข้าสู่ฉาก</h1>
-          </div>
-
-          <div className="experience-progress">
-            <div className="experience-progress__label">
-              <span>กำลังเตรียมโมเดลและฉาก</span>
-              <strong>{percent}%</strong>
-            </div>
-            <progress max="100" value={percent}>
-              {percent}%
-            </progress>
-          </div>
+          <JourneyLoader mode="boot" progress={state.progress} />
         </section>
       )}
 
@@ -122,6 +98,8 @@ export function ExperienceOverlay({
           </button>
         </section>
       )}
+
+      {enteringWorld && <JourneyLoader mode="travel" />}
 
       {!showsLoader && state.phase !== 'error' && (
         <p className="experience-credit">Mona — Character by Puna</p>

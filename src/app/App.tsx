@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router'
 import { AppShell } from '../components/AppShell'
+import { JourneyLoader } from '../components/JourneyLoader'
 import { ConceptsPage } from '../pages/ConceptsPage'
 import { LessonsPage } from '../pages/LessonsPage'
 import { NotFoundPage } from '../pages/NotFoundPage'
@@ -42,30 +43,16 @@ function ExperienceRouteLoader() {
         data-testid="loader-surface"
         aria-live="polite"
       >
-        <header className="experience-brand" aria-label="ThreeLab">
-          <span className="experience-brand__mark">3D</span>
-          <span>ThreeLab</span>
-        </header>
-
-        <div className="experience-loader-shapes" aria-hidden="true">
-          <span className="experience-loader-shape experience-loader-shape--circle" />
-          <span className="experience-loader-shape experience-loader-shape--square" />
-          <span className="experience-loader-shape experience-loader-shape--triangle" />
-        </div>
-
-        <div className="experience-loading-copy">
-          <p className="experience-eyebrow">กำลังเตรียมโลก 3D</p>
-          <h1>กำลังพา Mona เข้าสู่ฉาก</h1>
-        </div>
-
-        <div className="experience-progress">
-          <div className="experience-progress__label">
-            <span>กำลังเปิดประสบการณ์</span>
-            <strong>0%</strong>
-          </div>
-          <progress max="100" value="0">0%</progress>
-        </div>
+        <JourneyLoader mode="boot" progress={0} />
       </section>
+    </main>
+  )
+}
+
+function WorldRouteLoader() {
+  return (
+    <main className="world-journey">
+      <JourneyLoader mode="travel" instant />
     </main>
   )
 }
@@ -92,7 +79,7 @@ export function App() {
       <Route
         path="worlds/:worldId"
         element={
-          <Suspense fallback={<RouteLoader />}>
+          <Suspense fallback={<WorldRouteLoader />}>
             <ChapterPage />
           </Suspense>
         }

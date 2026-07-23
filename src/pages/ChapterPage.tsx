@@ -1,11 +1,29 @@
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { JourneyLoader } from '../components/JourneyLoader'
 import { WorldJourneyCanvas } from '../worlds/WorldJourneyCanvas'
 import { getWorldById, worldCatalog } from '../worlds/world.registry'
 
 export function ChapterPage() {
   const { worldId } = useParams()
   const navigate = useNavigate()
+  const [sceneReady, setSceneReady] = useState(false)
+  const [minimumElapsed, setMinimumElapsed] = useState(false)
+  const [loaderVisible, setLoaderVisible] = useState(true)
+  const [loaderExiting, setLoaderExiting] = useState(false)
   const world = getWorldById(worldId)
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMinimumElapsed(true), 950)
+    return () => window.clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!sceneReady || !minimumElapsed) return
+    setLoaderExiting(true)
+    const timer = window.setTimeout(() => setLoaderVisible(false), 680)
+    return () => window.clearTimeout(timer)
+  }, [minimumElapsed, sceneReady])
 
   if (!world) return <Navigate to="/worlds/foundations" replace />
 
@@ -23,7 +41,7 @@ export function ChapterPage() {
       data-world-id={world.id}
       style={{ '--world-accent': world.accent } as React.CSSProperties}
     >
-      <WorldJourneyCanvas worldId={world.id} />
+      <WorldJourneyCanvas worldId={world.id} onReady={() => setSceneReady(true)} />
 
       <section className="world-journey__content" key={world.id}>
         <Link className="world-journey__home" to="/">
@@ -80,6 +98,10 @@ export function ChapterPage() {
           </button>
         )}
       </nav>
+
+      {loaderVisible && (
+        <JourneyLoader mode="travel" exiting={loaderExiting} instant />
+      )}
     </main>
   )
 }
