@@ -18,7 +18,25 @@ function number(value: number) {
   return Number(value.toFixed(2))
 }
 
-function snapshotToCode(snapshot: SandboxSnapshot) {
+function snapshotToCode(
+  snapshot: SandboxSnapshot,
+  kind: CodeLabDefinition['snapshotKind'] = 'transform',
+) {
+  if (kind === 'light-shadow') {
+    const light = snapshot.lights['key-light']
+    const cube = snapshot.objects['learning-cube']
+    const floor = snapshot.objects['shadow-floor']
+    if (!light || !cube || !floor) return ''
+
+    return `// โค้ดจากค่าแสงและเงาปัจจุบัน
+renderer.shadowMap.enabled = ${snapshot.renderer.shadowMapEnabled}
+cube.castShadow = ${cube.castShadow}
+floor.receiveShadow = ${floor.receiveShadow}
+light.castShadow = ${light.castShadow}
+light.position.set(${light.position.map(number).join(', ')})
+light.intensity = ${number(light.intensity)}`
+  }
+
   const cube = snapshot.objects['learning-cube']
   if (!cube) return ''
 
@@ -125,7 +143,10 @@ export const CodeLab = forwardRef<CodeLabHandle, CodeLabProps>(function CodeLab(
         <button
           type="button"
           disabled={!snapshot}
-          onClick={() => snapshot && setCode(snapshotToCode(snapshot))}
+          onClick={() =>
+            snapshot &&
+            setCode(snapshotToCode(snapshot, definition.snapshotKind))
+          }
           className="w-full rounded-lg px-3 py-2 text-[11px] font-bold text-[#397561] hover:bg-[#e7f1ed] disabled:opacity-50"
         >
           ↳ สร้างโค้ดจากค่าที่ปรับอยู่ตอนนี้

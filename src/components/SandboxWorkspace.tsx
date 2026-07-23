@@ -3,8 +3,10 @@ import type { Exercise, ExerciseResult } from '../exercises/exercise.types'
 import { validateExercise } from '../exercises/validator.registry'
 import { SandboxCanvas, type SandboxCanvasHandle } from '../sandbox/SandboxCanvas'
 import { TransformControlsPanel } from '../sandbox/controls/TransformControlsPanel'
+import { LightShadowControlsPanel } from '../sandbox/controls/LightShadowControlsPanel'
 import type {
   CodeLabDefinition,
+  LightShadowControlsDefinition,
   SandboxSceneDefinition,
   SandboxSnapshot,
   TransformPatch,
@@ -20,6 +22,7 @@ type SandboxWorkspaceProps = {
   activeObjectId: string
   exercise?: Exercise
   codeLab?: CodeLabDefinition
+  lightingControls?: LightShadowControlsDefinition
   onExercisePassed?: (exerciseId: string) => void
   compact?: boolean
   practical?: boolean
@@ -30,6 +33,7 @@ export function SandboxWorkspace({
   activeObjectId,
   exercise,
   codeLab,
+  lightingControls,
   onExercisePassed,
   compact = false,
   practical = false,
@@ -247,14 +251,32 @@ export function SandboxWorkspace({
             <>
               <div className="border-b border-[#e3e9e7] px-5 py-3">
                 <p className="text-[11px] font-bold tracking-[0.12em] text-[#84928e]">
-                  OBJECT · {activeObjectId}
+                  {lightingControls ? 'LIGHTING · SHADOWS' : `OBJECT · ${activeObjectId}`}
                 </p>
-                <p className="mt-1 text-[10px] text-[#9aa6a2]">ค่าด้านล่างเปลี่ยนตัววัตถุ ไม่ใช่กล้อง</p>
+                <p className="mt-1 text-[10px] text-[#9aa6a2]">
+                  {lightingControls
+                    ? 'เปิดระบบเงาและจัดตำแหน่งไฟหลัก'
+                    : 'ค่าด้านล่างเปลี่ยนตัววัตถุ ไม่ใช่กล้อง'}
+                </p>
               </div>
-              <TransformControlsPanel
-                transform={snapshot?.objects[activeObjectId]}
-                onChange={handleTransformChange}
-              />
+              {lightingControls ? (
+                snapshot ? (
+                  <LightShadowControlsPanel
+                    snapshot={snapshot}
+                    {...lightingControls}
+                    onChange={handleApplyCodeSnapshot}
+                  />
+                ) : (
+                  <div className="p-5 text-sm text-[#6c7d78]">
+                    กำลังเตรียมแสงและเงา…
+                  </div>
+                )
+              ) : (
+                <TransformControlsPanel
+                  transform={snapshot?.objects[activeObjectId]}
+                  onChange={handleTransformChange}
+                />
+              )}
             </>
           )}
         </aside>

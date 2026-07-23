@@ -120,4 +120,50 @@ describe('CodeLab', () => {
     await waitFor(() => expect(onApplySnapshot).toHaveBeenCalledWith(snapshot))
     expect(screen.getByRole('button', { name: /^▶ Run$/ })).toBeEnabled()
   })
+
+  it('creates light and shadow code from a lighting snapshot', () => {
+    const lightingDefinition: CodeLabDefinition = {
+      ...definition,
+      snapshotKind: 'light-shadow',
+    }
+    const lightingSnapshot: SandboxSnapshot = {
+      ...snapshot,
+      objects: {
+        ...snapshot.objects,
+        'shadow-floor': {
+          position: [0, -0.05, 0],
+          rotation: [0, 0, 0],
+          scale: [1, 1, 1],
+          castShadow: false,
+          receiveShadow: true,
+        },
+      },
+      renderer: { shadowMapEnabled: true },
+      lights: {
+        'key-light': {
+          kind: 'directional',
+          position: [-3, 6, 4],
+          intensity: 2.5,
+          castShadow: true,
+        },
+      },
+    }
+
+    render(
+      <CodeLab
+        definition={lightingDefinition}
+        snapshot={lightingSnapshot}
+        onApplySnapshot={vi.fn()}
+      />,
+    )
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: '↳ สร้างโค้ดจากค่าที่ปรับอยู่ตอนนี้',
+      }),
+    )
+
+    const generatedCode = (screen.getByRole('textbox') as HTMLTextAreaElement).value
+    expect(generatedCode).toContain('renderer.shadowMap.enabled = true')
+    expect(generatedCode).toContain('light.intensity = 2.5')
+  })
 })

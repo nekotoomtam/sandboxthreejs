@@ -285,6 +285,7 @@ export function LessonPage() {
                     activeObjectId={lesson.sandbox.activeObjectId}
                     exercise={lesson.exercises[0]}
                     codeLab={lesson.sandbox.codeLab}
+                    lightingControls={lesson.sandbox.lightingControls}
                     onExercisePassed={(exerciseId) =>
                       completeExercise(lesson.id, exerciseId, requiredExerciseIds)
                     }

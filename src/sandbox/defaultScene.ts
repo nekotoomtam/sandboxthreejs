@@ -2,6 +2,9 @@ import type { SandboxSceneDefinition } from './sandbox.types'
 
 export const DEFAULT_SANDBOX_SCENE: SandboxSceneDefinition = {
   background: '#eaf1ee',
+  renderer: {
+    shadowMapEnabled: false,
+  },
   camera: {
     position: [4.6, 3.5, 5.4],
     target: [0, 0.5, 0],

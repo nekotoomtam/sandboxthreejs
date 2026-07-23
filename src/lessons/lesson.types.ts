@@ -1,5 +1,9 @@
 import type { Exercise } from '../exercises/exercise.types'
-import type { CodeLabDefinition, SandboxSceneDefinition } from '../sandbox/sandbox.types'
+import type {
+  CodeLabDefinition,
+  LightShadowControlsDefinition,
+  SandboxSceneDefinition,
+} from '../sandbox/sandbox.types'
 
 export type LessonSection = {
   readonly id: string
@@ -24,6 +28,7 @@ export type Lesson = {
     readonly scene: SandboxSceneDefinition
     readonly activeObjectId: string
     readonly codeLab?: CodeLabDefinition
+    readonly lightingControls?: LightShadowControlsDefinition
   }
   readonly exercises: readonly Exercise[]
 }

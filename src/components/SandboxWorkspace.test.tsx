@@ -50,3 +50,19 @@ it('opens practical lessons in code mode with mobile Code and Result controls', 
   expect(screen.getByTestId('lesson-code-pane')).toHaveClass('lesson-code-pane')
   expect(screen.getByTestId('lesson-result-pane')).toHaveClass('lesson-result-pane')
 })
+
+it('selects focused light controls for a lighting lesson', () => {
+  render(
+    <SandboxWorkspace
+      definition={definition}
+      activeObjectId="learning-cube"
+      lightingControls={{
+        lightId: 'key-light',
+        casterObjectId: 'learning-cube',
+        receiverObjectId: 'shadow-floor',
+      }}
+    />,
+  )
+
+  expect(screen.getByText('กำลังเตรียมแสงและเงา…')).toBeVisible()
+})

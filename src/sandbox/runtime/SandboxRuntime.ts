@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import type {
+  SandboxLightDefinition,
   SandboxObjectDefinition,
   SandboxSceneDefinition,
   SandboxSnapshot,
@@ -43,6 +44,31 @@ export function materialParameters(
   }
 }
 
+export function lightFromDefinition(definition: SandboxLightDefinition) {
+  if (definition.kind === 'hemisphere') {
+    return new THREE.HemisphereLight(
+      definition.skyColor,
+      definition.groundColor,
+      definition.intensity,
+    )
+  }
+
+  const light = new THREE.DirectionalLight(
+    definition.color,
+    definition.intensity,
+  )
+  light.position.fromArray(definition.position)
+  light.castShadow = definition.castShadow ?? false
+  light.shadow.mapSize.set(1024, 1024)
+  light.shadow.camera.near = 0.5
+  light.shadow.camera.far = 30
+  light.shadow.camera.left = -8
+  light.shadow.camera.right = 8
+  light.shadow.camera.top = 8
+  light.shadow.camera.bottom = -8
+  return light
+}
+
 export class SandboxRuntime {
   private readonly definition: SandboxSceneDefinition
   private scene?: THREE.Scene
@@ -54,6 +80,7 @@ export class SandboxRuntime {
   private animationFrame?: number
   private resizeFrame?: number
   private readonly objects = new Map<string, THREE.Mesh>()
+  private readonly lights = new Map<string, THREE.Light>()
   private readonly listeners = new Set<SnapshotListener>()
   private disposed = false
 
@@ -89,15 +116,24 @@ export class SandboxRuntime {
       scene.add(axes)
     }
 
-    scene.add(new THREE.HemisphereLight(0xffffff, 0x47615a, 1.8))
+    if (this.definition.lights) {
+      for (const lightDefinition of this.definition.lights) {
+        const light = lightFromDefinition(lightDefinition)
+        light.name = lightDefinition.id
+        scene.add(light)
+        this.lights.set(lightDefinition.id, light)
+      }
+    } else {
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x47615a, 1.8))
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 3.2)
-    keyLight.position.set(4, 6, 3)
-    scene.add(keyLight)
+      const keyLight = new THREE.DirectionalLight(0xffffff, 3.2)
+      keyLight.position.set(4, 6, 3)
+      scene.add(keyLight)
 
-    const fillLight = new THREE.DirectionalLight(0x9cd8ff, 1.1)
-    fillLight.position.set(-4, 2, -3)
-    scene.add(fillLight)
+      const fillLight = new THREE.DirectionalLight(0x9cd8ff, 1.1)
+      fillLight.position.set(-4, 2, -3)
+      scene.add(fillLight)
+    }
 
     for (const objectDefinition of this.definition.objects) {
       const material = new THREE.MeshStandardMaterial(
@@ -129,6 +165,9 @@ export class SandboxRuntime {
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.ACESFilmicToneMapping
     renderer.toneMappingExposure = 1.08
+    renderer.shadowMap.enabled =
+      this.definition.renderer?.shadowMapEnabled ?? false
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap
     renderer.domElement.dataset.sandboxCanvas = 'true'
     container.replaceChildren(renderer.domElement)
     this.renderer = renderer
@@ -199,6 +238,20 @@ export class SandboxRuntime {
       }
     }
 
+    for (const lightDefinition of this.definition.lights ?? []) {
+      const light = this.lights.get(lightDefinition.id)
+      if (!light) continue
+
+      light.intensity = lightDefinition.intensity
+      light.castShadow =
+        lightDefinition.kind === 'directional'
+          ? lightDefinition.castShadow ?? false
+          : false
+      if (lightDefinition.kind === 'directional') {
+        light.position.fromArray(lightDefinition.position)
+      }
+    }
+
     this.controls?.update()
     this.emitSnapshot()
     this.render()
@@ -247,6 +300,14 @@ export class SandboxRuntime {
     if (this.renderer) {
       this.renderer.shadowMap.enabled = snapshot.renderer.shadowMapEnabled
     }
+    for (const [id, lightState] of Object.entries(snapshot.lights)) {
+      const light = this.lights.get(id)
+      if (!light) continue
+
+      light.position.fromArray(lightState.position)
+      light.intensity = lightState.intensity
+      light.castShadow = lightState.castShadow
+    }
     this.camera.position.fromArray(snapshot.camera.position)
     this.controls?.target.fromArray(snapshot.camera.target)
     this.controls?.update()
@@ -282,9 +343,29 @@ export class SandboxRuntime {
     return {
       objects,
       renderer: {
-        shadowMapEnabled: this.renderer?.shadowMap.enabled ?? false,
+        shadowMapEnabled:
+          this.renderer?.shadowMap.enabled ??
+          this.definition.renderer?.shadowMapEnabled ??
+          false,
       },
-      lights: {},
+      lights: Object.fromEntries(
+        [...this.lights].map(([id, light]) => [
+          id,
+          {
+            kind:
+              light instanceof THREE.HemisphereLight
+                ? ('hemisphere' as const)
+                : ('directional' as const),
+            position: [
+              light.position.x,
+              light.position.y,
+              light.position.z,
+            ] as Vector3Tuple,
+            intensity: light.intensity,
+            castShadow: light.castShadow,
+          },
+        ]),
+      ),
       camera: {
         position: cameraPosition,
         target: cameraTarget,
@@ -325,6 +406,7 @@ export class SandboxRuntime {
 
     this.listeners.clear()
     this.objects.clear()
+    this.lights.clear()
     this.scene = undefined
     this.camera = undefined
     this.renderer = undefined

@@ -105,4 +105,11 @@ export type CodeLabDefinition = {
   readonly description: string
   readonly starterCode: string
   readonly availableBindings: readonly string[]
+  readonly snapshotKind?: 'transform' | 'light-shadow'
+}
+
+export type LightShadowControlsDefinition = {
+  readonly lightId: string
+  readonly casterObjectId: string
+  readonly receiverObjectId: string
 }
