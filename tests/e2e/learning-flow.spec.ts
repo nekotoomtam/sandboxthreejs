@@ -167,6 +167,9 @@ test('completes the transform lesson by matching the target box with code', asyn
     'กำหนดสัดส่วนด้วย Scale',
   )
   await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
+  await expect(page.locator('.lesson-section-view__practice-intro p')).toContainText(
+    'STEP 04',
+  )
 
   await page.locator('.cm-content').fill(
     `cube.position.set(1.5, 1, -0.5)

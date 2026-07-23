@@ -271,7 +271,9 @@ export function LessonPage() {
                 <div key={activeTopic.id} className="lesson-section-view__practice">
                   <div className="lesson-section-view__practice-intro">
                     <div>
-                      <p>INTERACTIVE LAB · STEP 03</p>
+                      <p>
+                        INTERACTIVE LAB · STEP {String(topics.length).padStart(2, '0')}
+                      </p>
                       <h2>ลองควบคุมฉากด้วยตัวเอง</h2>
                     </div>
                     <span>เขียนคำสั่งด้านซ้าย แล้วดูผลลัพธ์จริงด้านขวา</span>
