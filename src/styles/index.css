@@ -505,3 +505,373 @@ input[type='range'] {
     transition-duration: 1ms;
   }
 }
+
+.world-map,
+.chapter-overview {
+  position: relative;
+  min-height: 100svh;
+  overflow: hidden;
+  color: #f7f4ff;
+  background:
+    radial-gradient(circle at 72% 34%, rgba(81, 73, 151, 0.34), transparent 32%),
+    radial-gradient(circle at 24% 78%, rgba(52, 111, 143, 0.18), transparent 28%),
+    linear-gradient(145deg, #0b0d22, #11102d 58%, #070815);
+}
+
+.world-map::before,
+.chapter-overview::before {
+  position: absolute;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  opacity: 0.58;
+  background-image:
+    radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.4px),
+    radial-gradient(circle, rgba(169, 189, 255, 0.7) 0 1px, transparent 1.3px);
+  background-position:
+    0 0,
+    47px 61px;
+  background-size:
+    97px 97px,
+    139px 139px;
+  mask-image: linear-gradient(to bottom, black, transparent 92%);
+}
+
+.world-back-link {
+  position: relative;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: rgba(244, 241, 255, 0.72);
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-decoration: none;
+  transition:
+    color 180ms ease,
+    transform 180ms ease;
+}
+
+.world-back-link:hover,
+.world-back-link:focus-visible {
+  color: #ffffff;
+  transform: translateX(-0.2rem);
+}
+
+.world-map__header {
+  position: relative;
+  z-index: 3;
+  max-width: 54rem;
+  margin: 0 auto;
+  padding: clamp(1.4rem, 4vw, 3.2rem) 1.5rem 0;
+  text-align: center;
+}
+
+.world-map__header .world-back-link {
+  position: absolute;
+  top: clamp(1rem, 3vw, 2rem);
+  left: clamp(1rem, 3vw, 2.5rem);
+}
+
+.world-map__header > p,
+.chapter-overview__eyebrow {
+  margin: 0;
+  color: #b9abff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+}
+
+.world-map__header h1 {
+  margin: 0.45rem 0 0.7rem;
+  font-size: clamp(2rem, 4.4vw, 4.6rem);
+  line-height: 0.98;
+  text-wrap: balance;
+}
+
+.world-map__header > span {
+  color: rgba(239, 235, 255, 0.68);
+  font-size: clamp(0.88rem, 1.4vw, 1.05rem);
+}
+
+.world-map__stage {
+  position: absolute;
+  inset: clamp(8.5rem, 21vh, 13rem) 0 0;
+}
+
+.planet-visual {
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.planet-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  filter: drop-shadow(0 1.5rem 3.5rem rgba(0, 0, 0, 0.38));
+}
+
+.world-planet-link {
+  --world-accent: #b9abff;
+  position: absolute;
+  z-index: 1;
+  display: block;
+  width: clamp(14rem, 27vw, 31rem);
+  aspect-ratio: 1;
+  color: #ffffff;
+  text-decoration: none;
+  transition:
+    transform 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    filter 320ms ease,
+    opacity 320ms ease;
+}
+
+.world-planet-link--foundations {
+  top: 2%;
+  left: 3%;
+  transform: rotate(-5deg) scale(0.9);
+}
+
+.world-planet-link--controls {
+  bottom: -16%;
+  left: 36%;
+  transform: scale(1.05);
+}
+
+.world-planet-link--integration {
+  top: -4%;
+  right: 3%;
+  transform: rotate(4deg) scale(0.92);
+}
+
+.world-planet-link:hover,
+.world-planet-link:focus-visible {
+  z-index: 5;
+  transform: translateY(-0.8rem) scale(1.08);
+  filter: brightness(1.15) saturate(1.08);
+  outline: none;
+}
+
+.world-planet-link__label {
+  position: absolute;
+  right: 4%;
+  bottom: 9%;
+  left: 4%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.15rem 0.75rem;
+  align-items: center;
+  padding: 0.9rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--world-accent), transparent 58%);
+  border-radius: 1rem;
+  background: rgba(10, 11, 30, 0.68);
+  box-shadow: 0 1rem 2.5rem rgba(0, 0, 0, 0.22);
+  backdrop-filter: blur(14px);
+}
+
+.world-planet-link__label small {
+  grid-row: 1 / 3;
+  color: var(--world-accent);
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.world-planet-link__label strong {
+  font-size: clamp(0.82rem, 1.25vw, 1rem);
+}
+
+.world-planet-link__label em {
+  color: rgba(244, 241, 255, 0.64);
+  font-size: 0.68rem;
+  font-style: normal;
+}
+
+.chapter-overview {
+  display: grid;
+  align-items: center;
+}
+
+.chapter-overview__content {
+  position: relative;
+  z-index: 3;
+  width: min(47rem, 55vw);
+  margin-left: clamp(1.4rem, 7vw, 7rem);
+  padding: clamp(1.2rem, 4vh, 3rem) 0;
+}
+
+.chapter-overview__content h1 {
+  max-width: 12ch;
+  margin: 1rem 0;
+  font-size: clamp(2.5rem, 5.4vw, 6rem);
+  line-height: 0.94;
+  text-wrap: balance;
+}
+
+.chapter-overview__description {
+  max-width: 40rem;
+  margin: 0;
+  color: rgba(239, 235, 255, 0.7);
+  font-size: clamp(0.96rem, 1.4vw, 1.15rem);
+  line-height: 1.8;
+}
+
+.chapter-lesson-list {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 43rem;
+  margin-top: clamp(1.5rem, 4vh, 3rem);
+}
+
+.chapter-lesson {
+  display: grid;
+  grid-template-columns: 2.3rem minmax(0, 1fr) auto;
+  gap: 0.9rem;
+  align-items: center;
+  min-height: 4.7rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid rgba(204, 198, 255, 0.16);
+  border-radius: 1.15rem;
+  color: #f7f4ff;
+  text-decoration: none;
+  background: rgba(18, 18, 49, 0.62);
+  backdrop-filter: blur(15px);
+}
+
+.chapter-lesson > span:first-child {
+  color: var(--world-accent);
+  font-weight: 900;
+}
+
+.chapter-lesson > span:nth-child(2) {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.chapter-lesson strong {
+  font-size: 0.93rem;
+}
+
+.chapter-lesson small,
+.chapter-lesson em {
+  color: rgba(239, 235, 255, 0.55);
+  font-size: 0.72rem;
+  font-style: normal;
+}
+
+.chapter-lesson--available {
+  border-color: color-mix(in srgb, var(--world-accent), transparent 62%);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.chapter-lesson--available:hover,
+.chapter-lesson--available:focus-visible {
+  transform: translateX(0.5rem);
+  border-color: var(--world-accent);
+  outline: none;
+  background: rgba(38, 34, 79, 0.78);
+}
+
+.chapter-lesson--locked {
+  opacity: 0.55;
+}
+
+.chapter-overview__planet {
+  position: absolute;
+  right: clamp(-32rem, -38vmin, -18rem);
+  bottom: clamp(-32rem, -38vmin, -18rem);
+  z-index: 1;
+  width: min(90vmin, 72rem);
+  aspect-ratio: 1;
+}
+
+.planet-visual--chapter img {
+  animation: planet-orbit-drift 108s linear infinite;
+}
+
+@keyframes planet-orbit-drift {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 800px) {
+  .world-map__header {
+    padding-top: 4.8rem;
+  }
+
+  .world-map__stage {
+    inset: 12rem 0 0;
+  }
+
+  .world-planet-link {
+    width: clamp(12rem, 54vw, 19rem);
+  }
+
+  .world-planet-link--foundations {
+    top: 0;
+    left: -5%;
+  }
+
+  .world-planet-link--controls {
+    bottom: 5%;
+    left: 23%;
+  }
+
+  .world-planet-link--integration {
+    top: 10%;
+    right: -9%;
+  }
+
+  .world-planet-link__label {
+    padding: 0.65rem 0.75rem;
+  }
+
+  .chapter-overview {
+    align-items: start;
+    overflow-y: auto;
+  }
+
+  .chapter-overview__content {
+    width: auto;
+    margin: 0;
+    padding: 1.2rem 1.2rem 17rem;
+  }
+
+  .chapter-overview__content h1 {
+    margin-top: 0.7rem;
+    font-size: clamp(2.4rem, 13vw, 4.5rem);
+  }
+
+  .chapter-lesson {
+    grid-template-columns: 1.8rem minmax(0, 1fr);
+  }
+
+  .chapter-lesson em {
+    display: none;
+  }
+
+  .chapter-overview__planet {
+    position: fixed;
+    right: -10rem;
+    bottom: -12rem;
+    width: 28rem;
+    opacity: 0.7;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .planet-visual--chapter img {
+    animation: none;
+  }
+
+  .world-planet-link,
+  .chapter-lesson--available {
+    transition-duration: 1ms;
+  }
+}

@@ -17,6 +17,12 @@ const PlaygroundPage = lazy(() =>
 const ConceptDetailPage = lazy(() =>
   import('../pages/ConceptDetailPage').then((module) => ({ default: module.ConceptDetailPage })),
 )
+const WorldMapPage = lazy(() =>
+  import('../pages/WorldMapPage').then((module) => ({ default: module.WorldMapPage })),
+)
+const ChapterPage = lazy(() =>
+  import('../pages/ChapterPage').then((module) => ({ default: module.ChapterPage })),
+)
 
 function RouteLoader() {
   return (
@@ -72,6 +78,22 @@ export function App() {
         element={
           <Suspense fallback={<ExperienceRouteLoader />}>
             <ExperiencePage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="worlds"
+        element={
+          <Suspense fallback={<RouteLoader />}>
+            <WorldMapPage />
+          </Suspense>
+        }
+      />
+      <Route
+        path="worlds/:worldId"
+        element={
+          <Suspense fallback={<RouteLoader />}>
+            <ChapterPage />
           </Suspense>
         }
       />
