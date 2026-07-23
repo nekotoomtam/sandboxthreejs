@@ -16,5 +16,6 @@ export type WorldDefinition = {
   readonly description: string
   readonly imageSrc: string
   readonly accent: string
+  readonly travelColor: string
   readonly lessons: readonly WorldLessonLink[]
 }

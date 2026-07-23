@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { worldCatalog } from '../world.registry'
+import { WorldSweepEffect } from './WorldSweepEffect'
 
 const WORLD_SPACING = 18
 const CAMERA_Z = 9.5
@@ -18,8 +19,9 @@ export class WorldJourneyRuntime {
   private travelFromX = 0
   private travelToX = 0
   private travelElapsed = 0
-  private travelDuration = 1.65
+  private travelDuration = 2.15
   private traveling = false
+  private sweepEffect?: WorldSweepEffect
 
   mount(container: HTMLElement, initialWorldIndex: number, onReady?: () => void): this {
     this.container = container
@@ -39,6 +41,7 @@ export class WorldJourneyRuntime {
     container.replaceChildren(renderer.domElement)
     this.renderer = renderer
 
+    this.sweepEffect = new WorldSweepEffect(container)
     this.scene.add(new THREE.HemisphereLight(0xbfc8dc, 0x20232b, 1.45))
     const key = new THREE.DirectionalLight(0xe8edf7, 2.2)
     key.position.set(-4, 8, 7)
@@ -71,11 +74,26 @@ export class WorldJourneyRuntime {
   travelTo(worldIndex: number, reducedMotion = false): void {
     const nextX = worldIndex * WORLD_SPACING
     if (Math.abs(nextX - this.currentCameraX) < 0.01) return
+    const direction = nextX > this.currentCameraX ? -1 : 1
     this.travelFromX = this.currentCameraX
     this.travelToX = nextX
     this.travelElapsed = 0
-    this.travelDuration = reducedMotion ? 0.08 : 1.65
+    this.travelDuration = reducedMotion ? 0.08 : 2.15
     this.traveling = true
+    this.sweepEffect?.play(
+      direction,
+      worldCatalog[worldIndex]?.travelColor ?? '#d7dbe5',
+      reducedMotion,
+      2.15,
+    )
+  }
+
+  revealInitial(worldIndex: number, reducedMotion = false): void {
+    this.sweepEffect?.play(
+      1,
+      worldCatalog[worldIndex]?.travelColor ?? '#d59a5f',
+      reducedMotion,
+    )
   }
 
   dispose(): void {
@@ -84,6 +102,8 @@ export class WorldJourneyRuntime {
     if (this.animationFrame !== undefined) cancelAnimationFrame(this.animationFrame)
     this.resizeObserver?.disconnect()
     this.timer.dispose()
+    this.sweepEffect?.dispose()
+    this.sweepEffect = undefined
     this.scene.traverse((object) => {
       if (!(object instanceof THREE.Mesh)) return
       object.geometry.dispose()
@@ -143,6 +163,7 @@ export class WorldJourneyRuntime {
     const width = Math.max(this.container.clientWidth, 1)
     const height = Math.max(this.container.clientHeight, 1)
     this.renderer.setSize(width, height, false)
+    this.sweepEffect?.resize(width, height)
     this.camera.aspect = width / height
     this.camera.updateProjectionMatrix()
   }
@@ -170,6 +191,7 @@ export class WorldJourneyRuntime {
     for (const planet of this.planets.children) {
       planet.rotation.z += delta * 0.018
     }
+    this.sweepEffect?.update(delta)
 
     this.renderer?.render(this.scene, this.camera)
     this.animationFrame = requestAnimationFrame(this.tick)

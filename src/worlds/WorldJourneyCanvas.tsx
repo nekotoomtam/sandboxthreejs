@@ -5,12 +5,14 @@ import { WorldJourneyRuntime } from './runtime/WorldJourneyRuntime'
 type Props = {
   worldId: string
   onReady?: () => void
+  revealInitial?: boolean
 }
 
-export function WorldJourneyCanvas({ worldId, onReady }: Props) {
+export function WorldJourneyCanvas({ worldId, onReady, revealInitial = false }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<WorldJourneyRuntime>(null)
   const onReadyRef = useRef(onReady)
+  const initialRevealRequestedRef = useRef(false)
   onReadyRef.current = onReady
   const initialIndexRef = useRef(
     Math.max(0, worldCatalog.findIndex((world) => world.id === worldId)),
@@ -38,6 +40,14 @@ export function WorldJourneyCanvas({ worldId, onReady }: Props) {
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
     runtimeRef.current?.travelTo(index, reducedMotion)
   }, [worldId])
+
+  useEffect(() => {
+    if (!revealInitial || initialRevealRequestedRef.current) return
+    initialRevealRequestedRef.current = true
+    const reducedMotion =
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    runtimeRef.current?.revealInitial(initialIndexRef.current, reducedMotion)
+  }, [revealInitial])
 
   return (
     <div
