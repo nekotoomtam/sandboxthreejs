@@ -1,5 +1,9 @@
 import type { SandboxSnapshot } from '../sandbox/sandbox.types'
 import type { ExerciseResult, ExerciseValidator } from './exercise.types'
+import {
+  LIGHT_SHADOW_TARGET,
+  LIGHT_SHADOW_TOLERANCE,
+} from './lightShadowTarget'
 import { MATCH_TARGET_TOLERANCE, MATCH_TARGET_TRANSFORM } from './transformTarget'
 
 const AXES = ['X', 'Y', 'Z'] as const
@@ -89,9 +93,59 @@ const matchCubeTransform: ExerciseValidator = (snapshot) => {
   }
 }
 
+const configureLightShadow: ExerciseValidator = (snapshot) => {
+  if (!snapshot.renderer.shadowMapEnabled) {
+    return { passed: false, message: 'เปิด Shadow Map ของ renderer ก่อน' }
+  }
+
+  const cube = snapshot.objects[LIGHT_SHADOW_TARGET.casterObjectId]
+  if (!cube?.castShadow) {
+    return { passed: false, message: 'กล่องยังไม่ได้เปิด castShadow' }
+  }
+
+  const floor = snapshot.objects[LIGHT_SHADOW_TARGET.receiverObjectId]
+  if (!floor?.receiveShadow) {
+    return { passed: false, message: 'พื้นยังไม่ได้เปิด receiveShadow' }
+  }
+
+  const light = snapshot.lights[LIGHT_SHADOW_TARGET.lightId]
+  if (!light?.castShadow) {
+    return { passed: false, message: 'ไฟยังไม่ได้เปิด castShadow' }
+  }
+
+  const positionAxis = firstLinearMismatch(
+    light.position,
+    LIGHT_SHADOW_TARGET.position,
+    LIGHT_SHADOW_TOLERANCE.position,
+  )
+  if (positionAxis >= 0) {
+    return {
+      passed: false,
+      message: `Position ${AXES[positionAxis]} ของไฟยังไม่ตรงเป้าหมาย`,
+    }
+  }
+
+  if (
+    Math.abs(light.intensity - LIGHT_SHADOW_TARGET.intensity) >
+    LIGHT_SHADOW_TOLERANCE.intensity
+  ) {
+    return {
+      passed: false,
+      message: 'Intensity ของไฟยังไม่เท่ากับ 2.5',
+    }
+  }
+
+  return {
+    passed: true,
+    message:
+      'ยอดเยี่ยม! แสงและเงาทำงานครบทั้ง renderer, กล่อง, พื้น และ Directional Light แล้ว',
+  }
+}
+
 const validators: Readonly<Record<string, ExerciseValidator>> = {
   'rotate-cube-y-45': rotateCubeY45,
   'match-cube-transform': matchCubeTransform,
+  'configure-light-shadow': configureLightShadow,
 }
 
 export function validateExercise(

@@ -47,6 +47,54 @@ function snapshotWithTransform(transform: ObjectTransform): SandboxSnapshot {
   }
 }
 
+type LightingPatch = {
+  rendererShadowMapEnabled?: boolean
+  cubeCastShadow?: boolean
+  floorReceiveShadow?: boolean
+  lightCastShadow?: boolean
+  lightPosition?: readonly [number, number, number]
+  lightIntensity?: number
+}
+
+function lightingSnapshot(patch: LightingPatch = {}): SandboxSnapshot {
+  return {
+    objects: {
+      'learning-cube': {
+        position: [0, 0.75, 0],
+        rotation: [0, 0, 0],
+        scale: [1, 1, 1],
+        castShadow: patch.cubeCastShadow ?? true,
+        receiveShadow: false,
+      },
+      'shadow-floor': {
+        position: [0, -0.05, 0],
+        rotation: [0, 0, 0],
+        scale: [1, 1, 1],
+        castShadow: false,
+        receiveShadow: patch.floorReceiveShadow ?? true,
+      },
+    },
+    renderer: {
+      shadowMapEnabled: patch.rendererShadowMapEnabled ?? true,
+    },
+    lights: {
+      'key-light': {
+        kind: 'directional',
+        position: patch.lightPosition ?? [-3, 6, 4],
+        intensity: patch.lightIntensity ?? 2.5,
+        castShadow: patch.lightCastShadow ?? true,
+      },
+    },
+    camera: {
+      position: [7, 5, 8],
+      target: [0, 0.5, -0.4],
+      azimuthDegrees: 40,
+      elevationDegrees: 25,
+      distance: 10,
+    },
+  }
+}
+
 describe('exercise validator registry', () => {
   it('accepts a Y rotation within the three-degree tolerance', () => {
     expect(validateExercise('rotate-cube-y-45', snapshotWithRotation(43)).passed).toBe(true)
@@ -88,4 +136,29 @@ describe('exercise validator registry', () => {
     expect(result.passed).toBe(false)
     expect(result.message).toContain('ยังไม่มีตัวตรวจคำตอบ')
   })
+
+  it('passes a complete light and shadow configuration', () => {
+    expect(
+      validateExercise('configure-light-shadow', lightingSnapshot()),
+    ).toMatchObject({ passed: true })
+  })
+
+  it.each([
+    ['Shadow Map', { rendererShadowMapEnabled: false }],
+    ['กล่อง', { cubeCastShadow: false }],
+    ['พื้น', { floorReceiveShadow: false }],
+    ['ไฟ', { lightCastShadow: false }],
+    ['Position', { lightPosition: [0, 6, 4] }],
+    ['Intensity', { lightIntensity: 1 }],
+  ] as const)(
+    'reports the first incomplete shadow dependency: %s',
+    (label, patch) => {
+      const result = validateExercise(
+        'configure-light-shadow',
+        lightingSnapshot(patch),
+      )
+      expect(result.passed).toBe(false)
+      expect(result.message).toContain(label)
+    },
+  )
 })
