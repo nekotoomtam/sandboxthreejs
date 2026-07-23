@@ -17,6 +17,10 @@ test('reveals Mona through one persistent cinematic canvas', async ({ page }) =>
   })
   await expect(page.getByRole('heading', { level: 1 })).toContainText('เรียนรู้ Three.js')
   await expect(page.locator('[data-experience-canvas="true"]')).toHaveCount(1)
+
+  await page.getByRole('link', { name: 'สำรวจเส้นทางเรียน' }).click()
+  await expect(page).toHaveURL(/\/worlds$/)
+  await expect(page.getByRole('link', { name: /เปิดบท/ })).toHaveCount(3)
 })
 
 test('honors reduced motion and reaches the stable entered state', async ({ page }) => {
@@ -35,7 +39,7 @@ test('honors reduced motion and reaches the stable entered state', async ({ page
 })
 
 test('keeps learning routes independent from the Mona canvas', async ({ page }) => {
-  for (const route of ['/lessons', '/concepts', '/playground']) {
+  for (const route of ['/worlds', '/lessons', '/concepts', '/playground']) {
     await page.goto(route)
     await expect(page.locator('[data-experience-canvas="true"]')).toHaveCount(0)
   }
