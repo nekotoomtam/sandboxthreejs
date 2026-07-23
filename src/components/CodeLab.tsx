@@ -43,7 +43,7 @@ export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps)
   }
 
   return (
-    <div className="flex h-full min-h-[520px] flex-col bg-[#f8faf9]">
+    <div className="lesson-code-lab flex h-full min-h-[520px] flex-col bg-[#f8faf9]">
       <div className="border-b border-[#dfe7e4] p-4">
         <div className="flex items-center justify-between gap-2">
           <div>

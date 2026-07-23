@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test'
 
+async function enterLessonLab(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: /เข้า Code Lab/ }).click()
+  await expect(page.locator('[data-lesson-phase="learning"]')).toBeVisible()
+}
+
 test('opens the first lesson and renders a Three.js canvas', async ({ page }) => {
   await page.goto('/lessons')
   await page
@@ -9,12 +14,15 @@ test('opens the first lesson and renders a Three.js canvas', async ({ page }) =>
     .click()
 
   await expect(page.getByRole('heading', { level: 1, name: 'Hello, Three.js' })).toBeVisible()
+  await expect(page.getByText('MISSION BRIEFING')).toBeVisible()
+  await enterLessonLab(page)
   await expect(page.locator('[data-sandbox-canvas="true"]')).toHaveCount(1)
   await expect(page.getByTestId('camera-azimuth')).toContainText('°')
 })
 
 test('checks the rotation exercise from scene state', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
+  await enterLessonLab(page)
   await page.getByRole('button', { name: 'ปรับค่า' }).click()
   const rotationY = page.getByRole('spinbutton', { name: 'ค่าตัวเลขการหมุนแกน Y' })
 
@@ -37,6 +45,7 @@ test('reset restores the initial object transform', async ({ page }) => {
 
 test('runs guided Three.js code and validates the resulting scene state', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
+  await enterLessonLab(page)
 
   const editor = page.locator('.cm-content')
   await expect(editor).toBeVisible({ timeout: 15_000 })
@@ -54,6 +63,7 @@ test('runs guided Three.js code and validates the resulting scene state', async 
 
 test('keeps the current preview visible when edited code fails', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
+  await enterLessonLab(page)
 
   const editor = page.locator('.cm-content')
   await editor.fill('this is not valid JavaScript')
@@ -85,14 +95,15 @@ test('searches the concept library and opens an interactive concept', async ({ p
 
 test('persists lesson completion and restores it after reload', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
+  await enterLessonLab(page)
   await page.getByRole('button', { name: 'ปรับค่า' }).click()
   await page.getByRole('spinbutton', { name: 'ค่าตัวเลขการหมุนแกน Y' }).fill('45')
   await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
 
   await expect(page.getByTestId('lesson-complete')).toBeVisible()
-  await expect(page.getByText('1/4')).toBeVisible()
 
   await page.reload()
+  await enterLessonLab(page)
   await expect(page.getByTestId('lesson-complete')).toBeVisible()
 
   await page.goto('/lessons')

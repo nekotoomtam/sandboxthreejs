@@ -84,6 +84,14 @@ export function App() {
           </Suspense>
         }
       />
+      <Route
+        path="lessons/:lessonId"
+        element={
+          <Suspense fallback={<WorldRouteLoader />}>
+            <LessonPage />
+          </Suspense>
+        }
+      />
       <Route element={<AppShell />}>
         <Route path="lessons" element={<LessonsPage />} />
         <Route path="concepts" element={<ConceptsPage />} />
@@ -92,14 +100,6 @@ export function App() {
           element={
             <Suspense fallback={<RouteLoader />}>
               <ConceptDetailPage />
-            </Suspense>
-          }
-        />
-        <Route
-          path="lessons/:lessonId"
-          element={
-            <Suspense fallback={<RouteLoader />}>
-              <LessonPage />
             </Suspense>
           }
         />

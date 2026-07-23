@@ -1,12 +1,26 @@
+import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router'
 import { SandboxWorkspace } from '../components/SandboxWorkspace'
 import { getLessonById, getNextPublishedLesson } from '../lessons/lesson.registry'
 import { useLearningProgress } from '../progress/progress.context'
 
+type LessonPhase = 'arriving' | 'briefing' | 'entering' | 'learning'
+
 export function LessonPage() {
   const { lessonId } = useParams()
   const lesson = getLessonById(lessonId)
   const { completeExercise, isLessonCompleted } = useLearningProgress()
+  const [phase, setPhase] = useState<LessonPhase>('arriving')
+
+  useEffect(() => {
+    if (phase !== 'arriving' && phase !== 'entering') return
+
+    const delay = phase === 'arriving' ? 720 : 820
+    const nextPhase = phase === 'arriving' ? 'briefing' : 'learning'
+    const timer = window.setTimeout(() => setPhase(nextPhase), delay)
+
+    return () => window.clearTimeout(timer)
+  }, [phase])
 
   if (!lesson) {
     return <Navigate to="/404" replace />
@@ -15,158 +29,168 @@ export function LessonPage() {
   const lessonCompleted = isLessonCompleted(lesson.id)
   const nextLesson = getNextPublishedLesson(lesson.order)
   const requiredExerciseIds = lesson.exercises.map((exercise) => exercise.id)
+  const showWorkspace = phase === 'entering' || phase === 'learning'
 
   return (
-    <div className="mx-auto max-w-[1480px] px-5 py-6 sm:px-8 lg:py-8">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <Link to="/lessons" className="text-xs font-bold text-[#548074] hover:text-[#236c58]">
-            ← กลับไปบทเรียนทั้งหมด
-          </Link>
-          <p className="mt-5 text-xs font-black tracking-[0.16em] text-[#d98b27]">{lesson.eyebrow}</p>
-          <h1 className="mt-1 text-3xl font-black tracking-tight text-[#183c34] sm:text-4xl">{lesson.title}</h1>
-          <p className="mt-2 text-sm leading-6 text-[#667a74]">{lesson.summary}</p>
-        </div>
-        <div className="flex gap-2 text-xs font-bold text-[#58736b]">
-          {lessonCompleted && (
-            <span className="rounded-full bg-[#dff1e8] px-3 py-2 text-[#21684f]">✓ ผ่านแล้ว</span>
-          )}
-          <span className="rounded-full border border-[#d9e2df] bg-white px-3 py-2">◷ {lesson.durationMinutes} นาที</span>
-          <span className="rounded-full border border-[#d9e2df] bg-white px-3 py-2">{lesson.difficulty}</span>
-        </div>
+    <main
+      className={`lesson-experience lesson-experience--foundations lesson-experience--${phase}`}
+      data-lesson-phase={phase}
+    >
+      <div className="lesson-experience__backdrop" aria-hidden="true">
+        <div className="lesson-experience__planet" />
+        <div className="lesson-experience__stars" />
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)]">
-        <aside className="space-y-5 xl:sticky xl:top-[94px] xl:self-start">
-          <div className="rounded-2xl border border-[#dce5e1] bg-white p-5">
-            <p className="text-xs font-black tracking-[0.13em] text-[#789087]">LEARNING GOALS</p>
-            <h2 className="mt-1 font-extrabold text-[#24483f]">จบบทนี้แล้วคุณจะ…</h2>
-            <ul className="mt-4 space-y-3">
+      <header className="lesson-experience__topbar">
+        <Link to="/worlds/foundations" className="lesson-experience__back">
+          <span aria-hidden="true">←</span>
+          กลับสู่ดาวพื้นฐาน
+        </Link>
+        <div className="lesson-experience__route">
+          <span>WORLD 01</span>
+          <i />
+          <strong>LESSON {String(lesson.order).padStart(2, '0')}</strong>
+        </div>
+      </header>
+
+      <section className="lesson-briefing" aria-hidden={phase !== 'briefing'}>
+        <article className="lesson-briefing__card">
+          <div className="lesson-briefing__number">01</div>
+          <div className="lesson-briefing__copy">
+            <p className="lesson-briefing__eyebrow">MISSION BRIEFING · {lesson.eyebrow}</p>
+            <h1>{lesson.title}</h1>
+            <p className="lesson-briefing__summary">{lesson.summary}</p>
+
+            <div className="lesson-briefing__meta">
+              <span>◷ {lesson.durationMinutes} นาที</span>
+              <span>{lesson.difficulty}</span>
+              {lessonCompleted && <span className="lesson-briefing__completed">✓ ผ่านแล้ว</span>}
+            </div>
+
+            <div className="lesson-briefing__mission">
+              <p>สิ่งที่เราจะสร้าง</p>
+              <strong>ฉาก Three.js แรกที่หมุน ดู และแก้ไขได้จริง</strong>
+            </div>
+
+            <ul className="lesson-briefing__goals">
               {lesson.objectives.map((objective) => (
-                <li key={objective} className="flex gap-2.5 text-sm leading-6 text-[#60736d]">
-                  <span className="mt-1 grid size-4 shrink-0 place-items-center rounded-full bg-[#dff0e8] text-[9px] font-black text-[#2f7a65]">✓</span>
+                <li key={objective}>
+                  <span>✓</span>
                   {objective}
                 </li>
               ))}
             </ul>
+
+            <button
+              type="button"
+              className="lesson-briefing__enter"
+              onClick={() => setPhase('entering')}
+            >
+              <span>
+                <small>พร้อมทดลอง</small>
+                เข้า Code Lab
+              </span>
+              <b aria-hidden="true">→</b>
+            </button>
           </div>
 
-          <nav className="rounded-2xl border border-[#dce5e1] bg-white p-5" aria-label="สารบัญบทเรียน">
-            <p className="text-xs font-black tracking-[0.13em] text-[#789087]">IN THIS LESSON</p>
-            <ol className="mt-3 space-y-2">
-              {lesson.sections.map((section, index) => (
-                <li key={section.id}>
-                  <a href={`#${section.id}`} className="flex gap-3 rounded-lg px-2 py-2 text-sm text-[#60736d] hover:bg-[#f0f5f3] hover:text-[#2b6e5b]">
-                    <span className="font-mono text-xs text-[#a2ada9]">0{index + 1}</span>
-                    {section.heading}
-                  </a>
-                </li>
-              ))}
-            </ol>
-          </nav>
-        </aside>
+          <aside className="lesson-briefing__preview" aria-label="ตัวอย่างคำสั่งในบทเรียน">
+            <div className="lesson-briefing__orbit">
+              <span>SCENE</span>
+              <span>CAMERA</span>
+              <span>RENDERER</span>
+              <i />
+            </div>
+            <pre>
+              <code>{`const world = new THREE.Scene()\n\nworld.add(cube)\nrenderer.render(world, camera)`}</code>
+            </pre>
+            <p>ทุกอย่างเริ่มจากฉากว่างหนึ่งฉาก</p>
+          </aside>
+        </article>
+      </section>
 
-        <div className="min-w-0 space-y-6">
-          <article className="lesson-copy rounded-2xl border border-[#dce5e1] bg-white px-6 py-7 sm:px-8">
+      {showWorkspace && (
+        <section className="lesson-lab" aria-hidden={phase !== 'learning'}>
+          <div className="lesson-lab__header">
+            <div>
+              <p>WORLD 01 · FOUNDATIONS</p>
+              <h1>{lesson.title}</h1>
+            </div>
+            <div className="lesson-lab__progress">
+              <span>LESSON PROGRESS</span>
+              <div><i /></div>
+              <strong>01 / 03</strong>
+            </div>
+          </div>
+
+          <div className="lesson-lab__guide">
             {lesson.sections.map((section, index) => (
-              <section key={section.id} id={section.id} className={index > 0 ? 'mt-9 border-t border-[#e8edeb] pt-8' : ''}>
-                <div className="flex items-start gap-3">
-                  <span className="mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-[#173f37] text-[11px] font-black text-[#ffd08b]">
-                    {index + 1}
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-xl font-black tracking-tight text-[#23453d]">{section.heading}</h2>
-                    <div className="mt-3 space-y-3">
-                      {section.paragraphs.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+              <article key={section.id}>
+                <span>0{index + 1}</span>
+                <div>
+                  <h2>{section.heading}</h2>
+                  <p>{section.paragraphs[0]}</p>
+                  {section.conceptIds && (
+                    <div className="lesson-lab__concepts">
+                      {section.conceptIds.map((conceptId) => (
+                        <Link key={conceptId} to={`/concepts/${conceptId}`}>
+                          {conceptId} ↗
+                        </Link>
+                      ))}
                     </div>
-                    {section.conceptIds && (
-                      <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <span className="text-[10px] font-black tracking-[0.12em] text-[#899892]">เปิดคำอธิบาย:</span>
-                        {section.conceptIds.map((conceptId) => (
-                          <Link
-                            key={conceptId}
-                            to={`/concepts/${conceptId}`}
-                            className="rounded-lg bg-[#eaf2ef] px-2.5 py-1.5 font-mono text-[10px] font-bold text-[#39705f] hover:bg-[#dcebe5]"
-                          >
-                            {conceptId} ↗
-                          </Link>
-                        ))}
-                      </div>
-                    )}
-                    {section.code && (
-                      <pre className="mt-4 overflow-x-auto rounded-xl border border-[#d5e1dc] bg-[#142f2a] p-4 text-[12px] leading-6 text-[#d9f0e7] shadow-inner">
-                        <code>{section.code}</code>
-                      </pre>
-                    )}
-                    {section.note && (
-                      <p className="mt-4 rounded-xl border-l-4 border-[#f3a83b] bg-[#fff7e9] px-4 py-3 text-sm font-semibold text-[#70542c]">
-                        {section.note}
-                      </p>
-                    )}
-                  </div>
+                  )}
                 </div>
-              </section>
+              </article>
             ))}
-          </article>
+          </div>
 
-          <SandboxWorkspace
-            practical
-            definition={lesson.sandbox.scene}
-            activeObjectId={lesson.sandbox.activeObjectId}
-            exercise={lesson.exercises[0]}
-            codeLab={lesson.sandbox.codeLab}
-            onExercisePassed={(exerciseId) =>
-              completeExercise(lesson.id, exerciseId, requiredExerciseIds)
-            }
-          />
+          <div className="lesson-lab__workspace">
+            <SandboxWorkspace
+              practical
+              definition={lesson.sandbox.scene}
+              activeObjectId={lesson.sandbox.activeObjectId}
+              exercise={lesson.exercises[0]}
+              codeLab={lesson.sandbox.codeLab}
+              onExercisePassed={(exerciseId) =>
+                completeExercise(lesson.id, exerciseId, requiredExerciseIds)
+              }
+            />
+          </div>
 
           {lessonCompleted && (
-            <section
-              data-testid="lesson-complete"
-              className="overflow-hidden rounded-2xl border border-[#b9dccd] bg-[#e5f4ed] shadow-[0_12px_34px_rgba(31,103,79,.09)]"
-            >
-              <div className="grid gap-5 px-6 py-6 sm:grid-cols-[1fr_auto] sm:items-center sm:px-8">
+            <section data-testid="lesson-complete" className="lesson-lab__complete">
+              <div>
+                <span>✓</span>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <span className="grid size-8 place-items-center rounded-full bg-[#26785e] text-sm font-black text-white">✓</span>
-                    <p className="text-[10px] font-black tracking-[0.14em] text-[#3b7a66]">LESSON COMPLETED</p>
-                  </div>
-                  <h2 className="mt-3 text-xl font-black text-[#174c3c]">ผ่านบทเรียนแล้ว</h2>
-                  <p className="mt-1 text-sm leading-6 text-[#527469]">
-                    ความคืบหน้าถูกบันทึกไว้บนเครื่องนี้แล้ว
-                    {nextLesson
-                      ? ' พร้อมไปต่อยังบทถัดไปได้เลย'
-                      : ' ตอนนี้บทถัดไปยังอยู่ระหว่างเตรียมเนื้อหา'}
-                  </p>
+                  <p>LESSON COMPLETED</p>
+                  <h2>ผ่านบทเรียนแล้ว</h2>
+                  <small>
+                    ความคืบหน้าถูกบันทึกไว้แล้ว
+                    {nextLesson ? ' พร้อมไปต่อยังบทถัดไปได้เลย' : ' บทถัดไปกำลังเตรียมอยู่'}
+                  </small>
                 </div>
-                <div className="flex flex-wrap gap-2 sm:justify-end">
-                  {nextLesson ? (
+              </div>
+              <div>
+                {nextLesson ? (
+                  <Link to={`/lessons/${nextLesson.id}`}>ไปบทถัดไป →</Link>
+                ) : (
+                  <>
                     <Link
-                      to={`/lessons/${nextLesson.id}`}
-                      className="rounded-xl bg-[#173f37] px-5 py-3 text-sm font-black text-white transition hover:bg-[#225448]"
+                      to="/worlds/foundations"
+                      className="lesson-lab__complete-primary"
                     >
-                      ไปบทถัดไป →
+                      กลับสู่ดาวพื้นฐาน →
                     </Link>
-                  ) : (
-                    <Link
-                      to="/lessons"
-                      className="rounded-xl bg-[#173f37] px-5 py-3 text-sm font-black text-white transition hover:bg-[#225448]"
-                    >
-                      กลับเส้นทางเรียน →
-                    </Link>
-                  )}
-                  <Link
-                    to="/playground"
-                    className="rounded-xl border border-[#9ec9b8] bg-white/60 px-4 py-3 text-sm font-bold text-[#2e6b57] hover:bg-white"
-                  >
-                    ฝึกต่อใน Playground
-                  </Link>
-                </div>
+                  </>
+                )}
+                <Link to="/playground">ฝึกต่อใน Playground</Link>
               </div>
             </section>
           )}
-        </div>
-      </div>
-    </div>
+        </section>
+      )}
+
+      <div className="lesson-experience__entry-mask" aria-hidden="true" />
+    </main>
   )
 }
