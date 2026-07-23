@@ -23,8 +23,10 @@ function snapshotToCode(snapshot: SandboxSnapshot) {
 
 export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps) {
   const [code, setCode] = useState(definition.starterCode)
+  const [lastSuccessfulCode, setLastSuccessfulCode] = useState(definition.starterCode)
   const [result, setResult] = useState<CodeRunResult>()
   const [isRunning, setIsRunning] = useState(false)
+  const hasPendingChanges = code !== lastSuccessfulCode
 
   const handleRun = async () => {
     if (!snapshot || isRunning) return
@@ -35,6 +37,7 @@ export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps)
     setIsRunning(false)
 
     if (nextResult.status === 'success' && nextResult.snapshot) {
+      setLastSuccessfulCode(code)
       onApplySnapshot(nextResult.snapshot)
     }
   }
@@ -62,7 +65,7 @@ export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps)
       </div>
 
       <div className="p-3">
-        <CodeEditor value={code} onChange={setCode} />
+        <CodeEditor value={code} onChange={setCode} onRun={handleRun} />
       </div>
 
       <div className="mt-auto space-y-3 border-t border-[#dfe7e4] p-4">
@@ -91,7 +94,7 @@ export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps)
             disabled={!snapshot || isRunning}
             className="flex-1 rounded-xl bg-[#f3a83b] px-4 py-2.5 text-xs font-black text-[#173b34] transition hover:bg-[#ffb84d] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isRunning ? 'กำลังรัน…' : '▶ รันโค้ด'}
+            {isRunning ? 'กำลังรัน…' : hasPendingChanges ? '▶ Run changes' : '▶ Run'}
           </button>
           <button
             type="button"

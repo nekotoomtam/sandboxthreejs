@@ -110,6 +110,7 @@ export function LessonPage() {
           </article>
 
           <SandboxWorkspace
+            practical
             definition={lesson.sandbox.scene}
             activeObjectId={lesson.sandbox.activeObjectId}
             exercise={lesson.exercises[0]}

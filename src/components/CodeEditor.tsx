@@ -1,12 +1,14 @@
 import { useEffect, useRef } from 'react'
 import { javascript } from '@codemirror/lang-javascript'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
+import { keymap } from '@codemirror/view'
 import { tags } from '@lezer/highlight'
 import { basicSetup, EditorView } from 'codemirror'
 
 type CodeEditorProps = {
   value: string
   onChange: (value: string) => void
+  onRun?: () => void
 }
 
 const editorTheme = EditorView.theme({
@@ -53,12 +55,14 @@ const highContrastHighlightStyle = HighlightStyle.define([
   { tag: tags.invalid, color: '#ffffff', backgroundColor: '#a84242' },
 ])
 
-export function CodeEditor({ value, onChange }: CodeEditorProps) {
+export function CodeEditor({ value, onChange, onRun }: CodeEditorProps) {
   const hostRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView>(null)
   const initialValueRef = useRef(value)
   const changeHandlerRef = useRef(onChange)
+  const runHandlerRef = useRef(onRun)
   changeHandlerRef.current = onChange
+  runHandlerRef.current = onRun
 
   useEffect(() => {
     if (!hostRef.current) return
@@ -72,6 +76,15 @@ export function CodeEditor({ value, onChange }: CodeEditorProps) {
         syntaxHighlighting(highContrastHighlightStyle),
         editorTheme,
         EditorView.lineWrapping,
+        keymap.of([
+          {
+            key: 'Mod-Enter',
+            run: () => {
+              runHandlerRef.current?.()
+              return true
+            },
+          },
+        ]),
         EditorView.contentAttributes.of({
           'aria-label': 'พื้นที่เขียนโค้ด Three.js',
           spellcheck: 'false',

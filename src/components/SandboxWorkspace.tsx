@@ -21,6 +21,7 @@ type SandboxWorkspaceProps = {
   codeLab?: CodeLabDefinition
   onExercisePassed?: (exerciseId: string) => void
   compact?: boolean
+  practical?: boolean
 }
 
 export function SandboxWorkspace({
@@ -30,12 +31,16 @@ export function SandboxWorkspace({
   codeLab,
   onExercisePassed,
   compact = false,
+  practical = false,
 }: SandboxWorkspaceProps) {
   const canvasRef = useRef<SandboxCanvasHandle>(null)
   const [snapshot, setSnapshot] = useState<SandboxSnapshot>()
   const [result, setResult] = useState<ExerciseResult>()
   const [showHint, setShowHint] = useState(false)
-  const [workspaceMode, setWorkspaceMode] = useState<'controls' | 'code'>('controls')
+  const [workspaceMode, setWorkspaceMode] = useState<'controls' | 'code'>(() =>
+    practical && codeLab ? 'code' : 'controls',
+  )
+  const [mobilePane, setMobilePane] = useState<'code' | 'result'>('code')
 
   const handleTransformChange = (patch: TransformPatch) => {
     canvasRef.current?.updateObjectTransform(activeObjectId, patch)
@@ -65,7 +70,11 @@ export function SandboxWorkspace({
   }
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#dbe4e0] bg-white shadow-[0_14px_40px_rgba(31,65,55,.08)]">
+    <section
+      className={`overflow-hidden rounded-2xl border border-[#dbe4e0] bg-white shadow-[0_14px_40px_rgba(31,65,55,.08)]${
+        practical ? ' sandbox-workspace--practical' : ''
+      }`}
+    >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#e1e8e5] px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="size-2 rounded-full bg-emerald-500 shadow-[0_0_0_4px_rgba(16,185,129,.12)]" />
@@ -112,16 +121,48 @@ export function SandboxWorkspace({
         </div>
       </div>
 
+      {practical && codeLab && (
+        <div className="flex border-b border-[#e1e8e5] bg-[#f5f8f7] p-1 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setMobilePane('code')}
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-black ${
+              mobilePane === 'code' ? 'bg-[#173f37] text-white' : 'text-[#60766f]'
+            }`}
+          >
+            Code
+          </button>
+          <button
+            type="button"
+            onClick={() => setMobilePane('result')}
+            className={`flex-1 rounded-lg px-3 py-2 text-xs font-black ${
+              mobilePane === 'result' ? 'bg-[#173f37] text-white' : 'text-[#60766f]'
+            }`}
+          >
+            Result
+          </button>
+        </div>
+      )}
+
       <div
         className={`grid ${
-          workspaceMode === 'code' && codeLab
+          practical && codeLab
+            ? 'lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]'
+            : workspaceMode === 'code' && codeLab
             ? 'lg:grid-cols-[minmax(0,1fr)_410px]'
             : compact
               ? 'lg:grid-cols-[minmax(0,1fr)_290px]'
               : 'lg:grid-cols-[minmax(0,1fr)_300px]'
         }`}
       >
-        <div className="relative min-w-0">
+        <div
+          className={`relative min-w-0${
+            practical
+              ? ` lesson-result-pane order-2 ${mobilePane === 'result' ? 'block' : 'hidden'} lg:block`
+              : ''
+          }`}
+          data-testid={practical ? 'lesson-result-pane' : undefined}
+        >
           <SandboxCanvas
             ref={canvasRef}
             definition={definition}
@@ -162,7 +203,14 @@ export function SandboxWorkspace({
           )}
         </div>
 
-        <aside className="border-t border-[#e1e8e5] bg-[#fbfcfc] lg:border-l lg:border-t-0">
+        <aside
+          className={`border-t border-[#e1e8e5] bg-[#fbfcfc] lg:border-t-0${
+            practical
+              ? ` lesson-code-pane order-1 ${mobilePane === 'code' ? 'block' : 'hidden'} lg:block lg:border-r`
+              : ' lg:border-l'
+          }`}
+          data-testid={practical ? 'lesson-code-pane' : undefined}
+        >
           {workspaceMode === 'code' && codeLab ? (
             <Suspense
               fallback={

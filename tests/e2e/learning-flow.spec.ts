@@ -15,6 +15,7 @@ test('opens the first lesson and renders a Three.js canvas', async ({ page }) =>
 
 test('checks the rotation exercise from scene state', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
+  await page.getByRole('button', { name: 'ปรับค่า' }).click()
   const rotationY = page.getByRole('spinbutton', { name: 'ค่าตัวเลขการหมุนแกน Y' })
 
   await rotationY.fill('45')
@@ -36,16 +37,35 @@ test('reset restores the initial object transform', async ({ page }) => {
 
 test('runs guided Three.js code and validates the resulting scene state', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
-  await page.getByRole('button', { name: 'เขียนโค้ด' }).click()
 
   const editor = page.locator('.cm-content')
-  await expect(editor).toBeVisible()
+  await expect(editor).toBeVisible({ timeout: 15_000 })
   await expect(editor).toContainText('cube.rotation.y')
-  await page.getByRole('button', { name: /รันโค้ด/ }).click()
+  const codeBox = await page.getByTestId('lesson-code-pane').boundingBox()
+  const resultBox = await page.getByTestId('lesson-result-pane').boundingBox()
+  expect(codeBox?.x).toBeLessThan(resultBox?.x ?? 0)
+
+  await page.getByRole('button', { name: /^▶ Run$/ }).click()
 
   await expect(page.getByTestId('code-run-status')).toContainText('รันสำเร็จ')
   await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
   await expect(page.getByRole('status')).toContainText('เยี่ยมเลย')
+})
+
+test('keeps the current preview visible when edited code fails', async ({ page }) => {
+  await page.goto('/lessons/hello-threejs')
+
+  const editor = page.locator('.cm-content')
+  await editor.fill('this is not valid JavaScript')
+  await expect(page.getByRole('button', { name: /Run changes/ })).toBeVisible()
+  await page.getByRole('button', { name: /Run changes/ }).click()
+
+  await expect(page.getByTestId('code-run-status')).toContainText('SyntaxError')
+  await expect(page.locator('[data-sandbox-canvas="true"]')).toHaveCount(1)
+
+  await page.getByRole('button', { name: 'คืนโค้ดเริ่มต้น' }).click()
+  await expect(editor).toContainText('cube.rotation.y')
+  await expect(page.locator('[data-sandbox-canvas="true"]')).toHaveCount(1)
 })
 
 test('searches the concept library and opens an interactive concept', async ({ page }) => {
@@ -65,6 +85,7 @@ test('searches the concept library and opens an interactive concept', async ({ p
 
 test('persists lesson completion and restores it after reload', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
+  await page.getByRole('button', { name: 'ปรับค่า' }).click()
   await page.getByRole('spinbutton', { name: 'ค่าตัวเลขการหมุนแกน Y' }).fill('45')
   await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
 
