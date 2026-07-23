@@ -187,6 +187,10 @@ export class SandboxRuntime {
 
     this.camera.position.fromArray(this.definition.camera.position)
     this.controls?.target.fromArray(this.definition.camera.target)
+    if (this.renderer) {
+      this.renderer.shadowMap.enabled =
+        this.definition.renderer?.shadowMapEnabled ?? false
+    }
 
     for (const objectDefinition of this.definition.objects) {
       const object = this.objects.get(objectDefinition.id)
@@ -236,8 +240,13 @@ export class SandboxRuntime {
         transform.rotation[2] * DEG_TO_RAD,
       )
       object.scale.fromArray(transform.scale)
+      object.castShadow = transform.castShadow
+      object.receiveShadow = transform.receiveShadow
     }
 
+    if (this.renderer) {
+      this.renderer.shadowMap.enabled = snapshot.renderer.shadowMapEnabled
+    }
     this.camera.position.fromArray(snapshot.camera.position)
     this.controls?.target.fromArray(snapshot.camera.target)
     this.controls?.update()
@@ -257,6 +266,8 @@ export class SandboxRuntime {
           object.rotation.z * RAD_TO_DEG,
         ],
         scale: [object.scale.x, object.scale.y, object.scale.z],
+        castShadow: object.castShadow,
+        receiveShadow: object.receiveShadow,
       }
     }
 
@@ -270,6 +281,10 @@ export class SandboxRuntime {
 
     return {
       objects,
+      renderer: {
+        shadowMapEnabled: this.renderer?.shadowMap.enabled ?? false,
+      },
+      lights: {},
       camera: {
         position: cameraPosition,
         target: cameraTarget,
@@ -329,6 +344,8 @@ export class SandboxRuntime {
       rotation[2] * DEG_TO_RAD,
     )
     object.scale.fromArray(copyTuple(definition.scale, [1, 1, 1]))
+    object.castShadow = definition.castShadow ?? false
+    object.receiveShadow = definition.receiveShadow ?? false
   }
 
   private startAnimationLoop() {

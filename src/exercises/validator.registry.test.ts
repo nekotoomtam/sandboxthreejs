@@ -10,8 +10,12 @@ function snapshotWithRotation(y: number): SandboxSnapshot {
         position: [0, 0.75, 0],
         rotation: [0, y, 0],
         scale: [1, 1, 1],
+        castShadow: false,
+        receiveShadow: false,
       },
     },
+    renderer: { shadowMapEnabled: false },
+    lights: {},
     camera: {
       position: [4.6, 3.5, 5.4],
       target: [0, 0.5, 0],
@@ -24,7 +28,15 @@ function snapshotWithRotation(y: number): SandboxSnapshot {
 
 function snapshotWithTransform(transform: ObjectTransform): SandboxSnapshot {
   return {
-    objects: { 'learning-cube': transform },
+    objects: {
+      'learning-cube': {
+        ...transform,
+        castShadow: false,
+        receiveShadow: false,
+      },
+    },
+    renderer: { shadowMapEnabled: false },
+    lights: {},
     camera: {
       position: [4.6, 3.5, 5.4],
       target: [0, 0.5, 0],

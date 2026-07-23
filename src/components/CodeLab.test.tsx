@@ -41,8 +41,12 @@ const snapshot: SandboxSnapshot = {
       position: [0, 0, 0],
       rotation: [0, 0, 0],
       scale: [1, 1, 1],
+      castShadow: false,
+      receiveShadow: false,
     },
   },
+  renderer: { shadowMapEnabled: false },
+  lights: {},
   camera: {
     position: [4, 3, 6],
     target: [0, 0, 0],

@@ -20,7 +20,26 @@ export type SandboxObjectDefinition = {
   readonly position?: Vector3Tuple
   readonly rotation?: Vector3Tuple
   readonly scale?: Vector3Tuple
+  readonly castShadow?: boolean
+  readonly receiveShadow?: boolean
 }
+
+export type SandboxLightDefinition =
+  | {
+      readonly id: string
+      readonly kind: 'hemisphere'
+      readonly skyColor: string
+      readonly groundColor: string
+      readonly intensity: number
+    }
+  | {
+      readonly id: string
+      readonly kind: 'directional'
+      readonly color: string
+      readonly intensity: number
+      readonly position: Vector3Tuple
+      readonly castShadow?: boolean
+    }
 
 export type SandboxSceneDefinition = {
   readonly background: string
@@ -33,6 +52,10 @@ export type SandboxSceneDefinition = {
     readonly grid?: boolean
     readonly axes?: boolean
   }
+  readonly renderer?: {
+    readonly shadowMapEnabled?: boolean
+  }
+  readonly lights?: readonly SandboxLightDefinition[]
   readonly objects: readonly SandboxObjectDefinition[]
 }
 
@@ -42,8 +65,26 @@ export type ObjectTransform = {
   readonly scale: Vector3Tuple
 }
 
+export type SandboxObjectState = ObjectTransform & {
+  readonly castShadow: boolean
+  readonly receiveShadow: boolean
+}
+
+export type SandboxRendererState = {
+  readonly shadowMapEnabled: boolean
+}
+
+export type SandboxLightState = {
+  readonly kind: SandboxLightDefinition['kind']
+  readonly position: Vector3Tuple
+  readonly intensity: number
+  readonly castShadow: boolean
+}
+
 export type SandboxSnapshot = {
-  readonly objects: Readonly<Record<string, ObjectTransform>>
+  readonly objects: Readonly<Record<string, SandboxObjectState>>
+  readonly renderer: SandboxRendererState
+  readonly lights: Readonly<Record<string, SandboxLightState>>
   readonly camera: {
     readonly position: Vector3Tuple
     readonly target: Vector3Tuple

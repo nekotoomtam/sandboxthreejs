@@ -1,6 +1,10 @@
 import * as THREE from 'three'
 import { calculateCameraOrbit } from '../cameraMath'
-import type { SandboxSnapshot, Vector3Tuple } from '../sandbox.types'
+import type {
+  SandboxObjectState,
+  SandboxSnapshot,
+  Vector3Tuple,
+} from '../sandbox.types'
 import type { CodeRunRequest, CodeRunResult } from './code.types'
 
 type WorkerScope = {
@@ -28,6 +32,37 @@ function formatLogValue(value: unknown) {
   }
 }
 
+function applyObjectState(
+  object: THREE.Object3D,
+  state: SandboxObjectState | undefined,
+) {
+  if (!state) return
+
+  object.position.fromArray(state.position)
+  object.rotation.set(
+    state.rotation[0] * DEG_TO_RAD,
+    state.rotation[1] * DEG_TO_RAD,
+    state.rotation[2] * DEG_TO_RAD,
+  )
+  object.scale.fromArray(state.scale)
+  object.castShadow = state.castShadow
+  object.receiveShadow = state.receiveShadow
+}
+
+function objectState(object: THREE.Object3D): SandboxObjectState {
+  return {
+    position: [object.position.x, object.position.y, object.position.z],
+    rotation: [
+      object.rotation.x * RAD_TO_DEG,
+      object.rotation.y * RAD_TO_DEG,
+      object.rotation.z * RAD_TO_DEG,
+    ],
+    scale: [object.scale.x, object.scale.y, object.scale.z],
+    castShadow: object.castShadow,
+    receiveShadow: object.receiveShadow,
+  }
+}
+
 workerScope.addEventListener('message', (event) => {
   const { code, initialSnapshot } = event.data
   const logs: string[] = []
@@ -36,22 +71,30 @@ workerScope.addEventListener('message', (event) => {
   const geometry = new THREE.BoxGeometry(1.45, 1.45, 1.45)
   const material = new THREE.MeshStandardMaterial({ color: '#f3a83b' })
   const cube = new THREE.Mesh(geometry, material)
+  const floorGeometry = new THREE.BoxGeometry(10, 0.1, 10)
+  const floorMaterial = new THREE.MeshStandardMaterial()
+  const floor = new THREE.Mesh(floorGeometry, floorMaterial)
   const initialCube = initialSnapshot.objects['learning-cube']
+  const initialFloor = initialSnapshot.objects['shadow-floor']
+  const initialLight = initialSnapshot.lights['key-light']
+  const light = new THREE.DirectionalLight(
+    0xffffff,
+    initialLight?.intensity ?? 1,
+  )
+  const renderer = {
+    shadowMap: {
+      enabled: initialSnapshot.renderer.shadowMapEnabled,
+    },
+  }
   const target = new THREE.Vector3().fromArray(initialSnapshot.camera.target)
 
   scene.add(cube)
   camera.position.fromArray(initialSnapshot.camera.position)
   camera.lookAt(target)
-
-  if (initialCube) {
-    cube.position.fromArray(initialCube.position)
-    cube.rotation.set(
-      initialCube.rotation[0] * DEG_TO_RAD,
-      initialCube.rotation[1] * DEG_TO_RAD,
-      initialCube.rotation[2] * DEG_TO_RAD,
-    )
-    cube.scale.fromArray(initialCube.scale)
-  }
+  applyObjectState(cube, initialCube)
+  applyObjectState(floor, initialFloor)
+  light.position.fromArray(initialLight?.position ?? [1, 4, 3])
+  light.castShadow = initialLight?.castShadow ?? false
 
   const sandboxConsole = {
     log: (...values: unknown[]) => logs.push(values.map(formatLogValue).join(' ')),
@@ -65,10 +108,22 @@ workerScope.addEventListener('message', (event) => {
       'scene',
       'camera',
       'cube',
+      'renderer',
+      'floor',
+      'light',
       'console',
       `"use strict";\n${code}`,
     )
-    execute(THREE, scene, camera, cube, sandboxConsole)
+    execute(
+      THREE,
+      scene,
+      camera,
+      cube,
+      renderer,
+      floor,
+      light,
+      sandboxConsole,
+    )
 
     const cameraPosition: Vector3Tuple = [
       camera.position.x,
@@ -76,17 +131,32 @@ workerScope.addEventListener('message', (event) => {
       camera.position.z,
     ]
     const cameraTarget: Vector3Tuple = [target.x, target.y, target.z]
+    const lightPosition: Vector3Tuple = [
+      light.position.x,
+      light.position.y,
+      light.position.z,
+    ]
     const snapshot: SandboxSnapshot = {
       objects: {
-        'learning-cube': {
-          position: [cube.position.x, cube.position.y, cube.position.z],
-          rotation: [
-            cube.rotation.x * RAD_TO_DEG,
-            cube.rotation.y * RAD_TO_DEG,
-            cube.rotation.z * RAD_TO_DEG,
-          ],
-          scale: [cube.scale.x, cube.scale.y, cube.scale.z],
-        },
+        ...initialSnapshot.objects,
+        'learning-cube': objectState(cube),
+        ...(initialFloor ? { 'shadow-floor': objectState(floor) } : {}),
+      },
+      renderer: {
+        shadowMapEnabled: renderer.shadowMap.enabled,
+      },
+      lights: {
+        ...initialSnapshot.lights,
+        ...(initialLight
+          ? {
+              'key-light': {
+                kind: 'directional' as const,
+                position: lightPosition,
+                intensity: light.intensity,
+                castShadow: light.castShadow,
+              },
+            }
+          : {}),
       },
       camera: {
         position: cameraPosition,
@@ -105,6 +175,8 @@ workerScope.addEventListener('message', (event) => {
   } finally {
     geometry.dispose()
     material.dispose()
+    floorGeometry.dispose()
+    floorMaterial.dispose()
     scene.clear()
   }
 })

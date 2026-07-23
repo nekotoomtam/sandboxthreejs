@@ -81,6 +81,24 @@ console.log('Rotation Y:', THREE.MathUtils.radToDeg(cube.rotation.y))`,
   await expect(page.getByRole('status')).toContainText('เยี่ยมเลย')
 })
 
+test('runs renderer, floor, and light bindings inside the worker sandbox', async ({
+  page,
+}) => {
+  await page.goto('/lessons/hello-threejs')
+  await enterLessonLab(page)
+
+  await page.locator('.cm-content').fill(
+    `renderer.shadowMap.enabled = true
+light.position.set(-3, 6, 4)
+light.intensity = 2.5
+floor.receiveShadow = true
+console.log(renderer.shadowMap.enabled, light.intensity, floor.receiveShadow)`,
+  )
+  await page.getByRole('button', { name: /Run changes/ }).click()
+
+  await expect(page.getByTestId('code-run-status')).toContainText('true 2.5 true')
+})
+
 test('checks the latest editor contents without requiring a separate Run click', async ({
   page,
 }) => {
