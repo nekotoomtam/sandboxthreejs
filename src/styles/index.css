@@ -643,7 +643,7 @@ input[type='range'] {
 
 .world-planet-link--integration {
   top: -4%;
-  right: 3%;
+  left: 70%;
   transform: rotate(4deg) scale(0.92);
 }
 
@@ -783,8 +783,8 @@ input[type='range'] {
 
 .chapter-overview__planet {
   position: absolute;
-  right: clamp(-32rem, -38vmin, -18rem);
-  bottom: clamp(-32rem, -38vmin, -18rem);
+  top: 55%;
+  left: 75%;
   z-index: 1;
   width: min(90vmin, 72rem);
   aspect-ratio: 1;
@@ -825,7 +825,7 @@ input[type='range'] {
 
   .world-planet-link--integration {
     top: 10%;
-    right: -9%;
+    left: 55%;
   }
 
   .world-planet-link__label {
@@ -858,8 +858,8 @@ input[type='range'] {
 
   .chapter-overview__planet {
     position: fixed;
-    right: -10rem;
-    bottom: -12rem;
+    top: 64%;
+    left: 54%;
     width: 28rem;
     opacity: 0.7;
   }
