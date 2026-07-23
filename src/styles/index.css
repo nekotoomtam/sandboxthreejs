@@ -3381,3 +3381,144 @@ input[type='range'] {
     animation: none;
   }
 }
+
+/* Continuous handoff from the world view into a lesson */
+.world-journey::after {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  content: '';
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(circle at 78% 45%, transparent 10%, rgba(4, 5, 8, 0.18) 48%),
+    rgba(3, 4, 7, 0.18);
+  transition: opacity 620ms ease;
+}
+
+.world-journey__canvas canvas[data-world-journey-canvas='true'] {
+  transform: scale(1);
+  transform-origin: 78% 48%;
+  transition:
+    filter 620ms ease,
+    transform 720ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.world-journey--lesson-entering::after {
+  opacity: 1;
+}
+
+.world-journey--lesson-entering .world-journey__canvas canvas[data-world-journey-canvas='true'] {
+  filter: brightness(0.82);
+  transform: scale(1.12) translateX(-1.8%);
+}
+
+.world-journey--lesson-entering .world-journey__switcher {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lesson-briefing {
+  place-items: center start;
+  padding-right: clamp(3rem, 50vw, 54rem);
+  padding-left: clamp(4rem, 6.5vw, 8rem);
+}
+
+.lesson-briefing__card {
+  width: min(47rem, 48vw);
+  grid-template-columns: minmax(0, 1fr);
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.lesson-briefing__copy {
+  padding: 1rem 0;
+}
+
+.lesson-briefing__number {
+  margin: -1.1rem 0 0 -1rem;
+  opacity: 0.7;
+}
+
+.lesson-briefing h1 {
+  font-size: clamp(3.7rem, 5.5vw, 6.7rem);
+}
+
+.lesson-briefing__summary {
+  max-width: 35rem;
+}
+
+.lesson-briefing__preview {
+  display: none;
+}
+
+.lesson-experience--briefing .lesson-experience__planet {
+  right: -5vw;
+  width: min(69vw, 72rem);
+  opacity: 0.82;
+  transform: translateY(-48%) scale(1.03);
+}
+
+.lesson-experience--briefing .lesson-experience__backdrop::after {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(4, 5, 8, 0.98) 0%,
+      rgba(5, 6, 9, 0.87) 38%,
+      rgba(5, 6, 9, 0.22) 68%,
+      transparent 84%
+    ),
+    linear-gradient(0deg, rgba(3, 4, 7, 0.7), transparent 48%);
+}
+
+@media (max-width: 900px) {
+  .lesson-briefing {
+    place-items: center;
+    padding: 6rem 1.2rem 2rem;
+  }
+
+  .lesson-briefing__card {
+    width: min(43rem, 100%);
+    padding: 1.5rem;
+    border: 1px solid rgba(231, 215, 192, 0.14);
+    border-radius: 1.35rem;
+    background: rgba(12, 13, 17, 0.82);
+    box-shadow: 0 2rem 6rem rgba(0, 0, 0, 0.38);
+    backdrop-filter: blur(18px);
+  }
+}
+
+@media (max-width: 640px) {
+  .lesson-briefing {
+    align-items: start;
+    padding: 5.2rem 0.7rem 1rem;
+  }
+
+  .lesson-briefing__card {
+    padding: 0.35rem;
+    border: 0;
+    background: linear-gradient(90deg, rgba(10, 11, 15, 0.92), rgba(10, 11, 15, 0.68));
+  }
+
+  .lesson-briefing__copy {
+    padding: 1.6rem 1rem;
+  }
+
+  .lesson-experience--briefing .lesson-experience__planet {
+    top: 20%;
+    right: -43vw;
+    width: 125vw;
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .world-journey::after,
+  .world-journey__canvas canvas[data-world-journey-canvas='true'] {
+    transition-duration: 80ms;
+  }
+}

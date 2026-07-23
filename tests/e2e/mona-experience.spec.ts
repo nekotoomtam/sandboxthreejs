@@ -56,3 +56,19 @@ test('travels from one chapter planet to the next on one journey canvas', async 
   await expect(page.getByRole('heading', { level: 1 })).toContainText('การควบคุม')
   await expect(page.locator('[data-world-journey-canvas="true"]')).toHaveCount(1)
 })
+
+test('hands the foundations planet into its lesson briefing without the entry curtain', async ({
+  page,
+}) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  await page.goto('/worlds/foundations')
+  await expect(
+    page.locator('main.world-journey:not(.world-journey--sweeping)'),
+  ).toBeVisible({ timeout: 10_000 })
+
+  await page.getByRole('link', { name: /Scene, Camera, Renderer/ }).click()
+
+  await expect(page).toHaveURL(/\/lessons\/hello-threejs$/)
+  await expect(page.locator('[data-lesson-phase="briefing"]')).toBeVisible()
+  await expect(page.getByRole('button', { name: /เข้าสู่บทเรียน/ })).toBeVisible()
+})

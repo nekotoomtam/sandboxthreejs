@@ -14,8 +14,10 @@ export function ChapterPage() {
   const [initialReveal, setInitialReveal] = useState(false)
   const [sweeping, setSweeping] = useState(true)
   const [contentConcealed, setContentConcealed] = useState(true)
+  const [lessonEntering, setLessonEntering] = useState(false)
   const sweepTimerRef = useRef<number>(undefined)
   const contentTimerRef = useRef<number>(undefined)
+  const lessonTimerRef = useRef<number>(undefined)
   const world = getWorldById(worldId)
 
   const startSweep = useCallback((contentRevealDelay: number, duration: number) => {
@@ -44,6 +46,7 @@ export function ChapterPage() {
     () => () => {
       window.clearTimeout(sweepTimerRef.current)
       window.clearTimeout(contentTimerRef.current)
+      window.clearTimeout(lessonTimerRef.current)
     },
     [],
   )
@@ -66,16 +69,38 @@ export function ChapterPage() {
   const nextWorld = worldCatalog[worldIndex + 1]
 
   const travel = (nextId: string) => {
-    if (sweeping) return
+    if (sweeping || lessonEntering) return
     startSweep(1_350, 2_200)
     navigate(`/worlds/${nextId}`)
+  }
+
+  const enterLesson = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    lessonId: string,
+  ) => {
+    event.preventDefault()
+    if (sweeping || lessonEntering) return
+
+    const reducedMotion =
+      window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    setLessonEntering(true)
+    setContentConcealed(true)
+    lessonTimerRef.current = window.setTimeout(
+      () =>
+        navigate(`/lessons/${lessonId}`, {
+          state: { entry: 'world' },
+        }),
+      reducedMotion ? 80 : 620,
+    )
   }
 
   return (
     <main
       className={`world-journey${
         contentConcealed ? ' world-journey--content-concealed' : ''
-      }${sweeping ? ' world-journey--sweeping' : ''}`}
+      }${sweeping ? ' world-journey--sweeping' : ''}${
+        lessonEntering ? ' world-journey--lesson-entering' : ''
+      }`}
       data-world-id={world.id}
       style={
         {
@@ -113,6 +138,7 @@ export function ChapterPage() {
                 key={lesson.id}
                 className="world-journey-lesson world-journey-lesson--available"
                 to={`/lessons/${lesson.lessonId}`}
+                onClick={(event) => enterLesson(event, lesson.lessonId!)}
               >
                 <span>{String(index + 1).padStart(2, '0')}</span>
                 <span>

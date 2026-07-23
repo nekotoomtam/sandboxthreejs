@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useParams, useSearchParams } from 'react-router'
+import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
 import { SandboxWorkspace } from '../components/SandboxWorkspace'
 import { getLessonById, getNextPublishedLesson } from '../lessons/lesson.registry'
 import { useLearningProgress } from '../progress/progress.context'
@@ -8,12 +8,17 @@ type LessonPhase = 'arriving' | 'briefing' | 'entering' | 'hub' | 'opening' | 's
 
 export function LessonPage() {
   const { lessonId } = useParams()
+  const location = useLocation()
   const [searchParams] = useSearchParams()
   const lesson = getLessonById(lessonId)
   const { completeExercise, isLessonCompleted } = useLearningProgress()
   const topicFromUrl = Number.parseInt(searchParams.get('topic') ?? '', 10)
   const hasTopicFromUrl = Number.isInteger(topicFromUrl) && topicFromUrl >= 0
-  const [phase, setPhase] = useState<LessonPhase>(hasTopicFromUrl ? 'section' : 'arriving')
+  const enteredFromWorld =
+    (location.state as { entry?: string } | null)?.entry === 'world'
+  const [phase, setPhase] = useState<LessonPhase>(
+    hasTopicFromUrl ? 'section' : enteredFromWorld ? 'briefing' : 'arriving',
+  )
   const [activeTopicIndex, setActiveTopicIndex] = useState(hasTopicFromUrl ? topicFromUrl : 0)
 
   useEffect(() => {
