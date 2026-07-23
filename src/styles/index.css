@@ -1364,7 +1364,7 @@ input[type='range'] {
     transform 360ms ease;
 }
 
-.world-journey--sweeping .world-journey__content {
+.world-journey--content-concealed .world-journey__content {
   opacity: 0;
   transform: translate(-1rem, -50%);
   pointer-events: none;

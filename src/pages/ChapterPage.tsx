@@ -12,15 +12,23 @@ export function ChapterPage() {
   const [loaderVisible, setLoaderVisible] = useState(true)
   const [loaderExiting, setLoaderExiting] = useState(false)
   const [initialReveal, setInitialReveal] = useState(false)
-  const [sweeping, setSweeping] = useState(false)
+  const [sweeping, setSweeping] = useState(true)
+  const [contentConcealed, setContentConcealed] = useState(true)
   const sweepTimerRef = useRef<number>(undefined)
+  const contentTimerRef = useRef<number>(undefined)
   const world = getWorldById(worldId)
 
-  const startSweep = useCallback((duration = 1_700) => {
+  const startSweep = useCallback((contentRevealDelay: number, duration: number) => {
     window.clearTimeout(sweepTimerRef.current)
+    window.clearTimeout(contentTimerRef.current)
     setSweeping(true)
+    setContentConcealed(true)
     const reducedMotion =
       window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false
+    contentTimerRef.current = window.setTimeout(
+      () => setContentConcealed(false),
+      reducedMotion ? 60 : contentRevealDelay,
+    )
     sweepTimerRef.current = window.setTimeout(
       () => setSweeping(false),
       reducedMotion ? 100 : duration,
@@ -35,6 +43,7 @@ export function ChapterPage() {
   useEffect(
     () => () => {
       window.clearTimeout(sweepTimerRef.current)
+      window.clearTimeout(contentTimerRef.current)
     },
     [],
   )
@@ -45,7 +54,7 @@ export function ChapterPage() {
     const timer = window.setTimeout(() => {
       setLoaderVisible(false)
       setInitialReveal(true)
-      startSweep()
+      startSweep(1_050, 1_700)
     }, 680)
     return () => window.clearTimeout(timer)
   }, [minimumElapsed, sceneReady, startSweep])
@@ -58,13 +67,15 @@ export function ChapterPage() {
 
   const travel = (nextId: string) => {
     if (sweeping) return
-    startSweep(2_050)
+    startSweep(1_350, 2_200)
     navigate(`/worlds/${nextId}`)
   }
 
   return (
     <main
-      className={`world-journey${sweeping ? ' world-journey--sweeping' : ''}`}
+      className={`world-journey${
+        contentConcealed ? ' world-journey--content-concealed' : ''
+      }${sweeping ? ' world-journey--sweeping' : ''}`}
       data-world-id={world.id}
       style={{ '--world-accent': world.accent } as React.CSSProperties}
     >

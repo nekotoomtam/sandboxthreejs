@@ -194,7 +194,9 @@ export class WorldSweepEffect {
     this.elapsed += delta
     const raw = Math.min(this.elapsed / this.duration, 1)
     const eased = raw * raw * (3 - 2 * raw)
-    const presence = Math.pow(Math.sin(raw * Math.PI), 0.72)
+    const fadeIn = THREE.MathUtils.smoothstep(raw, 0, 0.22)
+    const fadeOut = 1 - THREE.MathUtils.smoothstep(raw, 0.7, 1)
+    const presence = Math.min(fadeIn, fadeOut)
 
     this.group.position.x = THREE.MathUtils.lerp(
       this.direction * -SWEEP_DISTANCE,
