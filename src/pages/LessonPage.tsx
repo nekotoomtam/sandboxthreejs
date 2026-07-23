@@ -63,6 +63,10 @@ export function LessonPage() {
     setPhase('opening')
   }
 
+  const moveInsideLesson = (index: number) => {
+    setActiveTopicIndex(Math.max(0, Math.min(index, topics.length - 1)))
+  }
+
   return (
     <main
       className={`lesson-experience lesson-experience--foundations lesson-experience--${phase}`}
@@ -204,8 +208,22 @@ export function LessonPage() {
 
           {phase === 'section' && (
             <div className="lesson-section-view">
+              <div className="lesson-section-view__planet-horizon" aria-hidden="true">
+                <div />
+              </div>
+
+              <button
+                type="button"
+                className="lesson-section-view__side lesson-section-view__side--previous"
+                onClick={() => moveInsideLesson(safeTopicIndex - 1)}
+                disabled={safeTopicIndex === 0}
+                aria-label="ไปเนื้อหาก่อนหน้า"
+              >
+                ←
+              </button>
+
               {!isPractice && activeSection ? (
-                <article className="lesson-section-view__article">
+                <article key={activeTopic.id} className="lesson-section-view__article">
                   <div className="lesson-section-view__copy">
                     <p className="lesson-section-view__eyebrow">
                       KNOWLEDGE {String(safeTopicIndex + 1).padStart(2, '0')}
@@ -248,14 +266,14 @@ export function LessonPage() {
                     </pre>
                     <button
                       type="button"
-                      onClick={() => openTopic(Math.min(safeTopicIndex + 1, topics.length - 1))}
+                      onClick={() => moveInsideLesson(safeTopicIndex + 1)}
                     >
                       ไปหัวข้อถัดไป <span>→</span>
                     </button>
                   </aside>
                 </article>
               ) : (
-                <div className="lesson-section-view__practice">
+                <div key={activeTopic.id} className="lesson-section-view__practice">
                   <div className="lesson-section-view__practice-intro">
                     <div>
                       <p>INTERACTIVE LAB · STEP 03</p>
@@ -307,6 +325,25 @@ export function LessonPage() {
                   )}
                 </div>
               )}
+
+              <button
+                type="button"
+                className="lesson-section-view__side lesson-section-view__side--next"
+                onClick={() => moveInsideLesson(safeTopicIndex + 1)}
+                disabled={safeTopicIndex === topics.length - 1}
+                aria-label="ไปเนื้อหาถัดไป"
+              >
+                →
+              </button>
+
+              <button
+                type="button"
+                className="lesson-section-view__exit"
+                onClick={() => setPhase('hub')}
+              >
+                <span aria-hidden="true">×</span>
+                ออกจากเนื้อหา
+              </button>
             </div>
           )}
         </section>

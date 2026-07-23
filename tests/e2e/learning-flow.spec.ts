@@ -22,6 +22,24 @@ test('opens the first lesson and renders a Three.js canvas', async ({ page }) =>
   await expect(page.getByTestId('camera-azimuth')).toContainText('°')
 })
 
+test('moves between lesson topics inside the same chamber and exits to the topic hub', async ({
+  page,
+}) => {
+  await page.goto('/lessons/hello-threejs')
+  await page.getByRole('button', { name: /เข้าสู่บทเรียน/ }).click()
+  await expect(page.locator('[data-lesson-phase="hub"]')).toBeVisible()
+
+  await page.getByRole('button', { name: /เปิดหัวข้อ สามส่วน/ }).click()
+  await expect(page.locator('[data-lesson-phase="section"]')).toBeVisible()
+  await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
+
+  await expect(page.locator('.lesson-lab__header h1')).toHaveText('จากรูปทรงสู่กล่องหนึ่งใบ')
+  await expect(page.locator('[data-lesson-phase="section"]')).toBeVisible()
+
+  await page.getByRole('button', { name: /ออกจากเนื้อหา/ }).click()
+  await expect(page.locator('[data-lesson-phase="hub"]')).toBeVisible()
+})
+
 test('checks the rotation exercise from scene state', async ({ page }) => {
   await page.goto('/lessons/hello-threejs')
   await enterLessonLab(page)

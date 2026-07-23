@@ -3155,3 +3155,229 @@ input[type='range'] {
     gap: 1rem;
   }
 }
+
+/* Focused lesson chamber: floating content above the planet horizon */
+.lesson-section-view {
+  position: relative;
+  width: calc(100% + clamp(2rem, 6vw, 6.4rem));
+  max-width: none;
+  min-height: calc(100svh - 10.5rem);
+  margin: 0 calc(-1 * clamp(1rem, 3vw, 3.2rem));
+  overflow: hidden;
+  padding: 1rem clamp(4rem, 8vw, 8rem) 9rem;
+  animation: none;
+}
+
+.lesson-section-view__planet-horizon {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.lesson-section-view__planet-horizon::after {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 42%;
+  content: '';
+  background: linear-gradient(0deg, rgba(3, 4, 7, 0.55), transparent);
+}
+
+.lesson-section-view__planet-horizon > div {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: max(110rem, 126vw);
+  aspect-ratio: 1;
+  border: 1px solid rgba(230, 202, 163, 0.22);
+  border-radius: 50%;
+  opacity: 0.64;
+  background:
+    linear-gradient(rgba(13, 14, 18, 0.28), rgba(13, 14, 18, 0.28)),
+    url('/assets/planets/planet-01-foundations.png') center / cover no-repeat;
+  box-shadow:
+    0 -0.15rem 1.5rem rgba(235, 204, 160, 0.16),
+    0 -2rem 8rem rgba(175, 132, 78, 0.11);
+  filter: saturate(0.48) brightness(0.52) contrast(1.12);
+  transform: translate(-50%, 77%) rotate(-3deg);
+  animation: lesson-planet-horizon-drift 28s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes lesson-planet-horizon-drift {
+  from {
+    transform: translate(-52%, 77%) rotate(-4deg);
+  }
+
+  to {
+    transform: translate(-48%, 75%) rotate(3deg);
+  }
+}
+
+.lesson-section-view__article,
+.lesson-section-view__practice {
+  position: relative;
+  z-index: 2;
+  width: min(76rem, 88%);
+  margin: 0 auto;
+}
+
+.lesson-section-view__article {
+  min-height: min(57vh, 37rem);
+  background: rgba(13, 14, 19, 0.86);
+  box-shadow:
+    0 2.5rem 8rem rgba(0, 0, 0, 0.48),
+    inset 0 1px rgba(255, 255, 255, 0.035);
+  backdrop-filter: blur(20px);
+}
+
+.lesson-section-view__practice {
+  padding: 1rem;
+  border: 1px solid rgba(235, 219, 195, 0.12);
+  border-radius: 1.4rem;
+  background: rgba(10, 11, 15, 0.9);
+  box-shadow: 0 2.5rem 8rem rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(20px);
+}
+
+.lesson-section-view__side {
+  position: absolute;
+  top: 42%;
+  z-index: 4;
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border: 1px solid rgba(235, 213, 182, 0.22);
+  border-radius: 50%;
+  color: #eccb9c;
+  font-size: 1rem;
+  cursor: pointer;
+  background: rgba(11, 12, 16, 0.72);
+  backdrop-filter: blur(12px);
+  transition:
+    border-color 160ms ease,
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.lesson-section-view__side:hover:not(:disabled),
+.lesson-section-view__side:focus-visible:not(:disabled) {
+  border-color: #e3b97e;
+  outline: none;
+  transform: scale(1.08);
+}
+
+.lesson-section-view__side:disabled {
+  opacity: 0.18;
+  cursor: default;
+}
+
+.lesson-section-view__side--previous {
+  left: clamp(0.7rem, 2.4vw, 2.6rem);
+}
+
+.lesson-section-view__side--next {
+  right: clamp(0.7rem, 2.4vw, 2.6rem);
+}
+
+.lesson-section-view__exit {
+  position: absolute;
+  top: 1.8rem;
+  right: clamp(4.8rem, 9vw, 9rem);
+  z-index: 5;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid rgba(235, 219, 195, 0.15);
+  border-radius: 999px;
+  color: rgba(241, 237, 230, 0.64);
+  font-size: 0.65rem;
+  font-weight: 750;
+  cursor: pointer;
+  background: rgba(12, 13, 17, 0.68);
+}
+
+.lesson-section-view__exit span {
+  color: #e5bd85;
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.lesson-section-view__exit:hover,
+.lesson-section-view__exit:focus-visible {
+  color: #fff;
+  border-color: rgba(229, 189, 133, 0.5);
+  outline: none;
+}
+
+@media (max-width: 900px) {
+  .lesson-section-view {
+    padding-right: 3.6rem;
+    padding-left: 3.6rem;
+  }
+
+  .lesson-section-view__article,
+  .lesson-section-view__practice {
+    width: 100%;
+  }
+
+  .lesson-section-view__planet-horizon > div {
+    width: max(90rem, 170vw);
+    transform: translate(-50%, 80%);
+  }
+}
+
+@media (max-width: 640px) {
+  .lesson-section-view {
+    width: calc(100% + 1.4rem);
+    min-height: calc(100svh - 9rem);
+    margin-right: -0.7rem;
+    margin-left: -0.7rem;
+    padding: 0.75rem 0.7rem 8rem;
+    overflow: visible;
+  }
+
+  .lesson-section-view__planet-horizon {
+    overflow: hidden;
+  }
+
+  .lesson-section-view__planet-horizon > div {
+    width: 95rem;
+    transform: translate(-50%, 82%);
+  }
+
+  .lesson-section-view__side {
+    top: auto;
+    bottom: 3.4rem;
+    width: 2.65rem;
+    height: 2.65rem;
+  }
+
+  .lesson-section-view__side--previous {
+    left: 1rem;
+  }
+
+  .lesson-section-view__side--next {
+    right: 1rem;
+  }
+
+  .lesson-section-view__exit {
+    top: -3.2rem;
+    right: 0.8rem;
+  }
+
+  .lesson-section-view__practice {
+    padding: 0.55rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lesson-section-view__planet-horizon > div {
+    animation: none;
+  }
+}
