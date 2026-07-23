@@ -42,7 +42,7 @@ export const helloThreeLesson: Lesson = {
     codeLab: {
       title: 'เขียนคำสั่งแรกของคุณ',
       description: 'เราเตรียม scene, camera และ cube ไว้ให้แล้ว ลองสั่งให้ตัวกล่องหมุนรอบแกน Y เป็น 45°',
-      starterCode: `// ตัวแปร scene, camera และ cube พร้อมใช้งานแล้ว\ncube.rotation.y = THREE.MathUtils.degToRad(45)\n\nconsole.log('Rotation Y:', THREE.MathUtils.radToDeg(cube.rotation.y))`,
+      starterCode: `// เปลี่ยน 0 เป็นมุมที่โจทย์ต้องการ\ncube.rotation.y = THREE.MathUtils.degToRad(0)\n\nconsole.log('Rotation Y:', THREE.MathUtils.radToDeg(cube.rotation.y))`,
       availableBindings: ['THREE', 'scene', 'camera', 'cube', 'console'],
     },
   },

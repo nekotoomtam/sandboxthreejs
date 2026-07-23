@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { forwardRef, useCallback, useImperativeHandle, useState } from 'react'
 import type { CodeLabDefinition, SandboxSnapshot } from '../sandbox/sandbox.types'
 import type { CodeRunResult } from '../sandbox/code/code.types'
 import { runSandboxCode } from '../sandbox/code/runSandboxCode'
@@ -8,6 +8,10 @@ type CodeLabProps = {
   definition: CodeLabDefinition
   snapshot?: SandboxSnapshot
   onApplySnapshot: (snapshot: SandboxSnapshot) => void
+}
+
+export type CodeLabHandle = {
+  runCurrentCode: () => Promise<CodeRunResult | undefined>
 }
 
 function number(value: number) {
@@ -21,15 +25,18 @@ function snapshotToCode(snapshot: SandboxSnapshot) {
   return `// โค้ดจากค่าปัจจุบันของตัวกล่อง\ncube.position.set(${cube.position.map(number).join(', ')})\ncube.rotation.set(\n  THREE.MathUtils.degToRad(${number(cube.rotation[0])}),\n  THREE.MathUtils.degToRad(${number(cube.rotation[1])}),\n  THREE.MathUtils.degToRad(${number(cube.rotation[2])})\n)\ncube.scale.set(${cube.scale.map(number).join(', ')})`
 }
 
-export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps) {
+export const CodeLab = forwardRef<CodeLabHandle, CodeLabProps>(function CodeLab(
+  { definition, snapshot, onApplySnapshot },
+  ref,
+) {
   const [code, setCode] = useState(definition.starterCode)
   const [lastSuccessfulCode, setLastSuccessfulCode] = useState(definition.starterCode)
   const [result, setResult] = useState<CodeRunResult>()
   const [isRunning, setIsRunning] = useState(false)
   const hasPendingChanges = code !== lastSuccessfulCode
 
-  const handleRun = async () => {
-    if (!snapshot || isRunning) return
+  const runCurrentCode = useCallback(async () => {
+    if (!snapshot || isRunning) return undefined
     setIsRunning(true)
     setResult(undefined)
     const nextResult = await runSandboxCode(code, snapshot)
@@ -40,6 +47,14 @@ export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps)
       setLastSuccessfulCode(code)
       onApplySnapshot(nextResult.snapshot)
     }
+
+    return nextResult
+  }, [code, isRunning, onApplySnapshot, snapshot])
+
+  useImperativeHandle(ref, () => ({ runCurrentCode }), [runCurrentCode])
+
+  const handleRun = () => {
+    void runCurrentCode()
   }
 
   return (
@@ -118,4 +133,4 @@ export function CodeLab({ definition, snapshot, onApplySnapshot }: CodeLabProps)
       </div>
     </div>
   )
-}
+})

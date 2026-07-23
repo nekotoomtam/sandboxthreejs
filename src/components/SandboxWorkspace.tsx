@@ -9,6 +9,7 @@ import type {
   SandboxSnapshot,
   TransformPatch,
 } from '../sandbox/sandbox.types'
+import type { CodeLabHandle } from './CodeLab'
 
 const CodeLab = lazy(() =>
   import('./CodeLab').then((module) => ({ default: module.CodeLab })),
@@ -34,9 +35,11 @@ export function SandboxWorkspace({
   practical = false,
 }: SandboxWorkspaceProps) {
   const canvasRef = useRef<SandboxCanvasHandle>(null)
+  const codeLabRef = useRef<CodeLabHandle>(null)
   const [snapshot, setSnapshot] = useState<SandboxSnapshot>()
   const [result, setResult] = useState<ExerciseResult>()
   const [showHint, setShowHint] = useState(false)
+  const [isValidating, setIsValidating] = useState(false)
   const [workspaceMode, setWorkspaceMode] = useState<'controls' | 'code'>(() =>
     practical && codeLab ? 'code' : 'controls',
   )
@@ -53,15 +56,29 @@ export function SandboxWorkspace({
     setShowHint(false)
   }
 
-  const handleValidate = () => {
-    const currentSnapshot = canvasRef.current?.getSnapshot()
-    if (exercise && currentSnapshot) {
+  const handleValidate = async () => {
+    if (!exercise || isValidating) return
+    setIsValidating(true)
+
+    let currentSnapshot = canvasRef.current?.getSnapshot()
+    if (workspaceMode === 'code' && codeLab) {
+      const codeResult = await codeLabRef.current?.runCurrentCode()
+      if (codeResult?.status !== 'success' || !codeResult.snapshot) {
+        setIsValidating(false)
+        return
+      }
+      currentSnapshot = codeResult.snapshot
+    }
+
+    if (currentSnapshot) {
       const validationResult = validateExercise(exercise.validator, currentSnapshot)
       setResult(validationResult)
       if (validationResult.passed) {
         onExercisePassed?.(exercise.id)
       }
     }
+
+    setIsValidating(false)
   }
 
   const handleApplyCodeSnapshot = (nextSnapshot: SandboxSnapshot) => {
@@ -220,6 +237,7 @@ export function SandboxWorkspace({
               }
             >
               <CodeLab
+                ref={codeLabRef}
                 definition={codeLab}
                 snapshot={snapshot}
                 onApplySnapshot={handleApplyCodeSnapshot}
@@ -280,10 +298,11 @@ export function SandboxWorkspace({
               </button>
               <button
                 type="button"
-                onClick={handleValidate}
-                className="rounded-xl bg-[#f3a83b] px-5 py-2.5 text-xs font-black text-[#173b34] shadow-[0_8px_20px_rgba(243,168,59,.2)] transition hover:-translate-y-0.5 hover:bg-[#ffb84d]"
+                onClick={() => void handleValidate()}
+                disabled={isValidating}
+                className="rounded-xl bg-[#f3a83b] px-5 py-2.5 text-xs font-black text-[#173b34] shadow-[0_8px_20px_rgba(243,168,59,.2)] transition hover:-translate-y-0.5 hover:bg-[#ffb84d] disabled:cursor-wait disabled:opacity-60"
               >
-                ตรวจคำตอบ
+                {isValidating ? 'กำลังตรวจ…' : 'ตรวจคำตอบ'}
               </button>
             </div>
           </div>

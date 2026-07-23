@@ -66,14 +66,36 @@ test('runs guided Three.js code and validates the resulting scene state', async 
   const editor = page.locator('.cm-content')
   await expect(editor).toBeVisible({ timeout: 15_000 })
   await expect(editor).toContainText('cube.rotation.y')
+  await editor.fill(
+    `cube.rotation.y = THREE.MathUtils.degToRad(45)
+console.log('Rotation Y:', THREE.MathUtils.radToDeg(cube.rotation.y))`,
+  )
   const codeBox = await page.getByTestId('lesson-code-pane').boundingBox()
   const resultBox = await page.getByTestId('lesson-result-pane').boundingBox()
   expect(codeBox?.x).toBeLessThan(resultBox?.x ?? 0)
 
-  await page.getByRole('button', { name: /^▶ Run$/ }).click()
+  await page.getByRole('button', { name: /Run changes/ }).click()
 
   await expect(page.getByTestId('code-run-status')).toContainText('รันสำเร็จ')
   await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
+  await expect(page.getByRole('status')).toContainText('เยี่ยมเลย')
+})
+
+test('checks the latest editor contents without requiring a separate Run click', async ({
+  page,
+}) => {
+  await page.goto('/lessons/hello-threejs')
+  await enterLessonLab(page)
+
+  const editor = page.locator('.cm-content')
+  await editor.fill(
+    `cube.rotation.y = THREE.MathUtils.degToRad(45)
+console.log('Rotation Y:', THREE.MathUtils.radToDeg(cube.rotation.y))`,
+  )
+
+  await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
+
+  await expect(page.getByTestId('code-run-status')).toContainText('รันสำเร็จ')
   await expect(page.getByRole('status')).toContainText('เยี่ยมเลย')
 })
 
