@@ -357,6 +357,7 @@ input[type='range'] {
 
 .experience-content {
   position: absolute;
+  isolation: isolate;
   top: 50%;
   left: clamp(1.5rem, 7vw, 7rem);
   width: min(48rem, 58vw);
@@ -368,6 +369,36 @@ input[type='range'] {
     opacity 620ms cubic-bezier(0.2, 0.8, 0.2, 1),
     transform 620ms cubic-bezier(0.2, 0.8, 0.2, 1),
     visibility 0s linear 620ms;
+}
+
+.experience-content::before {
+  position: absolute;
+  inset: -2.5rem -4rem -2.5rem -7rem;
+  z-index: -1;
+  content: '';
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(5, 6, 11, 0.9) 0%,
+    rgba(8, 9, 15, 0.7) 58%,
+    rgba(8, 9, 15, 0.18) 82%,
+    transparent 100%
+  );
+  box-shadow: 1.5rem 0 4rem rgba(0, 0, 0, 0.16);
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 14%,
+    #000 86%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent,
+    #000 14%,
+    #000 86%,
+    transparent
+  );
 }
 
 .experience-content--visible {
