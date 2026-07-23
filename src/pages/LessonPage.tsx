@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate, useLocation, useParams, useSearchParams } from 'react-router'
+import { Link, Navigate, useParams, useSearchParams } from 'react-router'
 import { SandboxWorkspace } from '../components/SandboxWorkspace'
 import { getLessonById, getNextPublishedLesson } from '../lessons/lesson.registry'
 import { useLearningProgress } from '../progress/progress.context'
@@ -8,17 +8,12 @@ type LessonPhase = 'arriving' | 'briefing' | 'entering' | 'hub' | 'opening' | 's
 
 export function LessonPage() {
   const { lessonId } = useParams()
-  const location = useLocation()
   const [searchParams] = useSearchParams()
   const lesson = getLessonById(lessonId)
   const { completeExercise, isLessonCompleted } = useLearningProgress()
   const topicFromUrl = Number.parseInt(searchParams.get('topic') ?? '', 10)
   const hasTopicFromUrl = Number.isInteger(topicFromUrl) && topicFromUrl >= 0
-  const enteredFromWorld =
-    (location.state as { entry?: string } | null)?.entry === 'world'
-  const [phase, setPhase] = useState<LessonPhase>(
-    hasTopicFromUrl ? 'section' : enteredFromWorld ? 'briefing' : 'arriving',
-  )
+  const [phase, setPhase] = useState<LessonPhase>('section')
   const [activeTopicIndex, setActiveTopicIndex] = useState(hasTopicFromUrl ? topicFromUrl : 0)
 
   useEffect(() => {
@@ -84,16 +79,11 @@ export function LessonPage() {
 
       <header className="lesson-experience__topbar">
         <Link
-          to={phase === 'section' ? '#' : '/worlds/foundations'}
+          to="/worlds/foundations"
           className="lesson-experience__back"
-          onClick={(event) => {
-            if (phase !== 'section') return
-            event.preventDefault()
-            setPhase('hub')
-          }}
         >
           <span aria-hidden="true">←</span>
-          {phase === 'section' ? 'กลับไปเลือกหัวข้อ' : 'กลับสู่ดาวพื้นฐาน'}
+          กลับสู่ดาวพื้นฐาน
         </Link>
         <div className="lesson-experience__route">
           <span>WORLD 01</span>
@@ -314,16 +304,12 @@ export function LessonPage() {
                         </div>
                       </div>
                       <div>
-                        {nextLesson ? (
-                          <Link to={`/lessons/${nextLesson.id}`}>ไปบทถัดไป →</Link>
-                        ) : (
-                          <Link
-                            to="/worlds/foundations"
-                            className="lesson-lab__complete-primary"
-                          >
-                            กลับสู่ดาวพื้นฐาน →
-                          </Link>
-                        )}
+                        <Link
+                          to="/worlds/foundations"
+                          className="lesson-lab__complete-primary"
+                        >
+                          กลับไปเลือกบทถัดไป →
+                        </Link>
                         <Link to="/playground">ฝึกต่อใน Playground</Link>
                       </div>
                     </section>
@@ -341,14 +327,13 @@ export function LessonPage() {
                 →
               </button>
 
-              <button
-                type="button"
+              <Link
                 className="lesson-section-view__exit"
-                onClick={() => setPhase('hub')}
+                to="/worlds/foundations"
               >
                 <span aria-hidden="true">×</span>
-                ออกจากเนื้อหา
-              </button>
+                ออกจากบทเรียน
+              </Link>
             </div>
           )}
         </section>

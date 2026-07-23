@@ -1,10 +1,10 @@
 import { expect, test } from '@playwright/test'
 
 async function enterLessonLab(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /เข้าสู่บทเรียน/ }).click()
-  await expect(page.locator('[data-lesson-phase="hub"]')).toBeVisible()
-  await page.getByRole('button', { name: /เปิดหัวข้อ ห้องทดลอง/ }).click()
   await expect(page.locator('[data-lesson-phase="section"]')).toBeVisible()
+  await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
+  await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
+  await expect(page.locator('.lesson-section-view__practice')).toBeVisible()
 }
 
 test('opens the first lesson and renders a Three.js canvas', async ({ page }) => {
@@ -15,29 +15,25 @@ test('opens the first lesson and renders a Three.js canvas', async ({ page }) =>
     .getByRole('link', { name: /เปิดบทเรียน/ })
     .click()
 
-  await expect(page.getByRole('heading', { level: 1, name: 'Hello, Three.js' })).toBeVisible()
-  await expect(page.getByText('MISSION BRIEFING')).toBeVisible()
+  await expect(page.locator('.lesson-lab__header h1')).toHaveText('สามส่วนที่ทำให้ฉากปรากฏ')
+  await expect(page.locator('.lesson-section-view__planet-horizon')).toBeVisible()
   await enterLessonLab(page)
   await expect(page.locator('[data-sandbox-canvas="true"]')).toHaveCount(1)
   await expect(page.getByTestId('camera-azimuth')).toContainText('°')
 })
 
-test('moves between lesson topics inside the same chamber and exits to the topic hub', async ({
+test('moves between lesson topics inside the same chamber and exits to the world', async ({
   page,
 }) => {
   await page.goto('/lessons/hello-threejs')
-  await page.getByRole('button', { name: /เข้าสู่บทเรียน/ }).click()
-  await expect(page.locator('[data-lesson-phase="hub"]')).toBeVisible()
-
-  await page.getByRole('button', { name: /เปิดหัวข้อ สามส่วน/ }).click()
   await expect(page.locator('[data-lesson-phase="section"]')).toBeVisible()
   await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
 
   await expect(page.locator('.lesson-lab__header h1')).toHaveText('จากรูปทรงสู่กล่องหนึ่งใบ')
   await expect(page.locator('[data-lesson-phase="section"]')).toBeVisible()
 
-  await page.getByRole('button', { name: /ออกจากเนื้อหา/ }).click()
-  await expect(page.locator('[data-lesson-phase="hub"]')).toBeVisible()
+  await page.getByRole('link', { name: /ออกจากบทเรียน/ }).click()
+  await expect(page).toHaveURL(/\/worlds\/foundations$/)
 })
 
 test('checks the rotation exercise from scene state', async ({ page }) => {

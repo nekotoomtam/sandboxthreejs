@@ -57,7 +57,7 @@ test('travels from one chapter planet to the next on one journey canvas', async 
   await expect(page.locator('[data-world-journey-canvas="true"]')).toHaveCount(1)
 })
 
-test('hands the foundations planet into its lesson briefing without the entry curtain', async ({
+test('hands the foundations planet into the first lesson topic', async ({
   page,
 }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
@@ -69,6 +69,6 @@ test('hands the foundations planet into its lesson briefing without the entry cu
   await page.getByRole('link', { name: /Scene, Camera, Renderer/ }).click()
 
   await expect(page).toHaveURL(/\/lessons\/hello-threejs$/)
-  await expect(page.locator('[data-lesson-phase="briefing"]')).toBeVisible()
-  await expect(page.getByRole('button', { name: /เข้าสู่บทเรียน/ })).toBeVisible()
+  await expect(page.locator('[data-lesson-phase="section"]')).toBeVisible()
+  await expect(page.locator('.lesson-section-view__planet-horizon')).toBeVisible()
 })

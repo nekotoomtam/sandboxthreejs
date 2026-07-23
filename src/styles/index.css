@@ -3194,26 +3194,26 @@ input[type='range'] {
   aspect-ratio: 1;
   border: 1px solid rgba(230, 202, 163, 0.22);
   border-radius: 50%;
-  opacity: 0.64;
+  opacity: 0.76;
   background:
     linear-gradient(rgba(13, 14, 18, 0.28), rgba(13, 14, 18, 0.28)),
     url('/assets/planets/planet-01-foundations.png') center / cover no-repeat;
   box-shadow:
     0 -0.15rem 1.5rem rgba(235, 204, 160, 0.16),
     0 -2rem 8rem rgba(175, 132, 78, 0.11);
-  filter: saturate(0.48) brightness(0.52) contrast(1.12);
-  transform: translate(-50%, 77%) rotate(-3deg);
-  animation: lesson-planet-horizon-drift 28s ease-in-out infinite alternate;
+  filter: saturate(0.52) brightness(0.62) contrast(1.12);
+  transform: translate(-50%, 70%) rotate(-3deg);
+  animation: lesson-planet-horizon-drift 36s ease-in-out infinite alternate;
   will-change: transform;
 }
 
 @keyframes lesson-planet-horizon-drift {
   from {
-    transform: translate(-52%, 77%) rotate(-4deg);
+    transform: translate(-52%, 71%) rotate(-4deg);
   }
 
   to {
-    transform: translate(-48%, 75%) rotate(3deg);
+    transform: translate(-48%, 68%) rotate(3deg);
   }
 }
 
@@ -3298,6 +3298,7 @@ input[type='range'] {
   color: rgba(241, 237, 230, 0.64);
   font-size: 0.65rem;
   font-weight: 750;
+  text-decoration: none;
   cursor: pointer;
   background: rgba(12, 13, 17, 0.68);
 }
