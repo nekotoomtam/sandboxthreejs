@@ -1,8 +1,10 @@
 import { expect, test } from '@playwright/test'
 
 async function enterLessonLab(page: import('@playwright/test').Page) {
-  await page.getByRole('button', { name: /เข้า Code Lab/ }).click()
-  await expect(page.locator('[data-lesson-phase="learning"]')).toBeVisible()
+  await page.getByRole('button', { name: /เข้าสู่บทเรียน/ }).click()
+  await expect(page.locator('[data-lesson-phase="hub"]')).toBeVisible()
+  await page.getByRole('button', { name: /เปิดหัวข้อ ห้องทดลอง/ }).click()
+  await expect(page.locator('[data-lesson-phase="section"]')).toBeVisible()
 }
 
 test('opens the first lesson and renders a Three.js canvas', async ({ page }) => {

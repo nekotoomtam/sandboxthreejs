@@ -92,17 +92,17 @@ export function App() {
           </Suspense>
         }
       />
+      <Route
+        path="concepts/:conceptId"
+        element={
+          <Suspense fallback={<WorldRouteLoader />}>
+            <ConceptDetailPage />
+          </Suspense>
+        }
+      />
       <Route element={<AppShell />}>
         <Route path="lessons" element={<LessonsPage />} />
         <Route path="concepts" element={<ConceptsPage />} />
-        <Route
-          path="concepts/:conceptId"
-          element={
-            <Suspense fallback={<RouteLoader />}>
-              <ConceptDetailPage />
-            </Suspense>
-          }
-        />
         <Route
           path="playground"
           element={
