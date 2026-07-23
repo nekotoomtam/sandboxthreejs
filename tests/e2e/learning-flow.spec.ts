@@ -149,3 +149,32 @@ test('persists lesson completion and restores it after reload', async ({ page })
     page.getByRole('article').filter({ hasText: 'Hello, Three.js' }),
   ).toContainText('ผ่านแล้ว')
 })
+
+test('completes the transform lesson by matching the target box with code', async ({
+  page,
+}) => {
+  await page.goto('/lessons/position-rotation-scale')
+
+  await expect(page.locator('.lesson-lab__header h1')).toHaveText(
+    'ย้ายวัตถุด้วย Position',
+  )
+  await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
+  await expect(page.locator('.lesson-lab__header h1')).toHaveText(
+    'หมุนวัตถุให้ถูกแกน',
+  )
+  await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
+  await expect(page.locator('.lesson-lab__header h1')).toHaveText(
+    'กำหนดสัดส่วนด้วย Scale',
+  )
+  await page.getByRole('button', { name: 'ไปเนื้อหาถัดไป' }).click()
+
+  await page.locator('.cm-content').fill(
+    `cube.position.set(1.5, 1, -0.5)
+cube.rotation.set(0, THREE.MathUtils.degToRad(45), 0)
+cube.scale.set(1.25, 0.75, 1.25)`,
+  )
+  await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
+
+  await expect(page.getByRole('status')).toContainText('ยอดเยี่ยม')
+  await expect(page.getByTestId('lesson-complete')).toBeVisible()
+})

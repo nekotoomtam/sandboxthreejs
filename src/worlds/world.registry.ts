@@ -19,10 +19,11 @@ export const worldCatalog: readonly WorldDefinition[] = [
         status: 'available',
       },
       {
-        id: 'object-transform',
+        id: 'position-rotation-scale',
+        lessonId: 'position-rotation-scale',
         title: 'Position, Rotation, Scale',
         summary: 'ควบคุมตำแหน่ง การหมุน และขนาดของวัตถุ',
-        status: 'coming-soon',
+        status: 'available',
       },
       {
         id: 'light-and-shadow',

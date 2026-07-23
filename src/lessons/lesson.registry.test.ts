@@ -12,4 +12,12 @@ describe('lesson registry', () => {
 
     expect(orders).toEqual([...orders].sort((a, b) => a - b))
   })
+
+  it('publishes the transform lesson after Hello Three.js', () => {
+    expect(getPublishedLessons().map((lesson) => lesson.id)).toEqual([
+      'hello-threejs',
+      'position-rotation-scale',
+    ])
+    expect(getLessonById('position-rotation-scale')?.sections).toHaveLength(3)
+  })
 })

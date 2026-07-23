@@ -10,11 +10,11 @@ describe('world registry', () => {
     ])
   })
 
-  it('links the available foundations lesson', () => {
-    expect(getWorldById('foundations')?.lessons[0]).toMatchObject({
-      lessonId: 'hello-threejs',
-      status: 'available',
-    })
+  it('links the first two available foundations lessons', () => {
+    expect(getWorldById('foundations')?.lessons.slice(0, 2)).toMatchObject([
+      { lessonId: 'hello-threejs', status: 'available' },
+      { lessonId: 'position-rotation-scale', status: 'available' },
+    ])
   })
 
   it('returns undefined for an unknown world', () => {

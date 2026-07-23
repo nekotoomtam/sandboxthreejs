@@ -1,7 +1,8 @@
 import { helloThreeLesson } from './content/helloThree'
+import { positionRotationScaleLesson } from './content/positionRotationScale'
 import type { Lesson, LessonCatalogItem } from './lesson.types'
 
-const lessons: readonly Lesson[] = [helloThreeLesson]
+const lessons: readonly Lesson[] = [helloThreeLesson, positionRotationScaleLesson]
 
 export const lessonCatalog: readonly LessonCatalogItem[] = [
   {
@@ -14,13 +15,13 @@ export const lessonCatalog: readonly LessonCatalogItem[] = [
     topic: 'เริ่มต้น',
   },
   {
-    id: 'position-basics',
+    id: 'position-rotation-scale',
     order: 2,
-    title: 'ขยับในโลก 3D',
-    summary: 'เข้าใจตำแหน่งผ่านแกน X, Y และ Z',
+    title: 'Position, Rotation, Scale',
+    summary: 'ย้าย หมุน และปรับขนาดให้ตรงกับเป้าหมาย',
     durationMinutes: 20,
-    status: 'coming-soon',
-    topic: 'Position',
+    status: 'available',
+    topic: 'Transform',
   },
   {
     id: 'rotation-basics',
