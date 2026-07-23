@@ -312,7 +312,6 @@ export function LessonPage() {
                         >
                           กลับไปเลือกบทถัดไป →
                         </Link>
-                        <Link to="/playground">ฝึกต่อใน Playground</Link>
                       </div>
                     </section>
                   )}

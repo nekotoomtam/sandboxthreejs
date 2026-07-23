@@ -139,6 +139,11 @@ test('persists lesson completion and restores it after reload', async ({ page })
   await page.getByRole('button', { name: 'ตรวจคำตอบ' }).click()
 
   await expect(page.getByTestId('lesson-complete')).toBeVisible()
+  await expect(
+    page.getByTestId('lesson-complete').getByRole('link', {
+      name: 'ฝึกต่อใน Playground',
+    }),
+  ).toHaveCount(0)
 
   await page.reload()
   await enterLessonLab(page)
