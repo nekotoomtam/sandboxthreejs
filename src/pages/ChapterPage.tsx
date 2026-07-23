@@ -54,7 +54,7 @@ export function ChapterPage() {
     const timer = window.setTimeout(() => {
       setLoaderVisible(false)
       setInitialReveal(true)
-      startSweep(1_050, 1_700)
+      startSweep(520, 1_300)
     }, 680)
     return () => window.clearTimeout(timer)
   }, [minimumElapsed, sceneReady, startSweep])
@@ -77,12 +77,25 @@ export function ChapterPage() {
         contentConcealed ? ' world-journey--content-concealed' : ''
       }${sweeping ? ' world-journey--sweeping' : ''}`}
       data-world-id={world.id}
-      style={{ '--world-accent': world.accent } as React.CSSProperties}
+      style={
+        {
+          '--world-accent': world.accent,
+          '--curtain-primary': world.travelColors[0],
+          '--curtain-secondary': world.travelColors[1],
+          '--curtain-highlight': world.travelColors[2],
+        } as React.CSSProperties
+      }
     >
       <WorldJourneyCanvas
         worldId={world.id}
         onReady={() => setSceneReady(true)}
         revealInitial={initialReveal}
+      />
+      <div
+        className={`world-journey__initial-curtain${
+          initialReveal ? ' world-journey__initial-curtain--revealing' : ''
+        }`}
+        aria-hidden="true"
       />
 
       <section className="world-journey__content" key={world.id}>

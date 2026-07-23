@@ -75,6 +75,7 @@ export class WorldSweepEffect {
   private active = false
   private elapsed = 0
   private duration = 1.65
+  private startProgress = 0
   private direction: 1 | -1 = 1
 
   constructor(container: HTMLElement) {
@@ -161,10 +162,12 @@ export class WorldSweepEffect {
     colors: readonly string[],
     reducedMotion = false,
     duration = 1.65,
+    startProgress = 0,
   ): void {
     this.direction = direction
     this.elapsed = 0
     this.duration = reducedMotion ? 0.08 : duration
+    this.startProgress = THREE.MathUtils.clamp(startProgress, 0, 0.98)
     this.active = true
     this.group.visible = true
     this.group.position.x = direction * -SWEEP_DISTANCE
@@ -186,13 +189,14 @@ export class WorldSweepEffect {
     this.secondaryMistMaterial.color.copy(palette[1] ?? palette[0])
     this.secondaryMist.position.x = direction * 0.6
     this.secondaryMist.rotation.z = direction * -0.34
-    this.renderer.render(this.scene, this.camera)
+    this.update(0)
   }
 
   update(delta: number): void {
     if (!this.active) return
     this.elapsed += delta
-    const raw = Math.min(this.elapsed / this.duration, 1)
+    const timeline = Math.min(this.elapsed / this.duration, 1)
+    const raw = this.startProgress + (1 - this.startProgress) * timeline
     const eased = raw * raw * (3 - 2 * raw)
     const fadeIn = THREE.MathUtils.smoothstep(raw, 0, 0.22)
     const fadeOut = 1 - THREE.MathUtils.smoothstep(raw, 0.7, 1)
@@ -213,7 +217,7 @@ export class WorldSweepEffect {
     this.secondaryMist.position.y = 0.34 + Math.sin(raw * Math.PI * 3) * 0.18
     this.renderer.render(this.scene, this.camera)
 
-    if (raw >= 1) {
+    if (timeline >= 1) {
       this.active = false
       this.group.visible = false
       this.particleMaterial.opacity = 0

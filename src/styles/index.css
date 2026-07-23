@@ -1229,6 +1229,54 @@ input[type='range'] {
   pointer-events: none;
 }
 
+.world-journey__initial-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  overflow: visible;
+  pointer-events: none;
+  background:
+    radial-gradient(
+      ellipse at 18% 28%,
+      color-mix(in srgb, var(--curtain-highlight), transparent 34%),
+      transparent 38%
+    ),
+    radial-gradient(
+      ellipse at 76% 72%,
+      color-mix(in srgb, var(--curtain-secondary), transparent 20%),
+      transparent 46%
+    ),
+    linear-gradient(
+      112deg,
+      var(--curtain-secondary),
+      var(--curtain-primary) 46%,
+      color-mix(in srgb, var(--curtain-primary), #111827 28%)
+    );
+  box-shadow: -2rem 0 5rem color-mix(in srgb, var(--curtain-primary), transparent 18%);
+  transform: translateX(0);
+  will-change: transform;
+}
+
+.world-journey__initial-curtain::before {
+  position: absolute;
+  top: 0;
+  right: 100%;
+  bottom: 0;
+  width: min(24vw, 22rem);
+  content: '';
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--curtain-primary), transparent 35%),
+    var(--curtain-primary)
+  );
+}
+
+.world-journey__initial-curtain--revealing {
+  transform: translateX(118%);
+  transition: transform 1.25s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
 .world-journey__content {
   position: absolute;
   top: 50%;
@@ -1439,5 +1487,9 @@ input[type='range'] {
 @media (prefers-reduced-motion: reduce) {
   .world-journey__content {
     animation-duration: 1ms;
+  }
+
+  .world-journey__initial-curtain--revealing {
+    transition-duration: 80ms;
   }
 }

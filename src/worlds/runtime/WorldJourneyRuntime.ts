@@ -93,6 +93,8 @@ export class WorldJourneyRuntime {
       1,
       worldCatalog[worldIndex]?.travelColors ?? ['#d59a5f', '#7f5a49', '#f0c98f'],
       reducedMotion,
+      1.25,
+      0.5,
     )
   }
 

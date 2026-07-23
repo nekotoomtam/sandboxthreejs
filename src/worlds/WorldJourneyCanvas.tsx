@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import { worldCatalog } from './world.registry'
 import { WorldJourneyRuntime } from './runtime/WorldJourneyRuntime'
 
@@ -41,7 +41,7 @@ export function WorldJourneyCanvas({ worldId, onReady, revealInitial = false }: 
     runtimeRef.current?.travelTo(index, reducedMotion)
   }, [worldId])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!revealInitial || initialRevealRequestedRef.current) return
     initialRevealRequestedRef.current = true
     const reducedMotion =
