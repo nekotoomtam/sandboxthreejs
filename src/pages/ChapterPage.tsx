@@ -58,7 +58,7 @@ export function ChapterPage() {
 
   const travel = (nextId: string) => {
     if (sweeping) return
-    startSweep(2_200)
+    startSweep(2_050)
     navigate(`/worlds/${nextId}`)
   }
 

@@ -82,7 +82,7 @@ export class WorldJourneyRuntime {
     this.traveling = true
     this.sweepEffect?.play(
       direction,
-      worldCatalog[worldIndex]?.travelColor ?? '#d7dbe5',
+      worldCatalog[worldIndex]?.travelColors ?? ['#d7dbe5', '#7d8492', '#f2e6d5'],
       reducedMotion,
       2.15,
     )
@@ -91,7 +91,7 @@ export class WorldJourneyRuntime {
   revealInitial(worldIndex: number, reducedMotion = false): void {
     this.sweepEffect?.play(
       1,
-      worldCatalog[worldIndex]?.travelColor ?? '#d59a5f',
+      worldCatalog[worldIndex]?.travelColors ?? ['#d59a5f', '#7f5a49', '#f0c98f'],
       reducedMotion,
     )
   }

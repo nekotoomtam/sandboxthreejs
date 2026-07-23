@@ -9,7 +9,7 @@ export const worldCatalog: readonly WorldDefinition[] = [
     description: 'สร้างฉาก กล้อง แสง และวัตถุชิ้นแรกให้เข้าใจจากผลลัพธ์จริง',
     imageSrc: '/assets/planets/planet-01-foundations.png',
     accent: '#c9b29a',
-    travelColor: '#d59a5f',
+    travelColors: ['#d59a5f', '#7f5a49', '#f0c98f'],
     lessons: [
       {
         id: 'hello-threejs',
@@ -40,7 +40,7 @@ export const worldCatalog: readonly WorldDefinition[] = [
     description: 'เชื่อมคีย์บอร์ด เวลา และทิศทางให้วัตถุเคลื่อนอย่างควบคุมได้',
     imageSrc: '/assets/planets/planet-02-controls.png',
     accent: '#6ca6c8',
-    travelColor: '#5ba7e1',
+    travelColors: ['#5ba7e1', '#4656a8', '#83d1c9'],
     lessons: [
       {
         id: 'keyboard-state',
@@ -70,7 +70,7 @@ export const worldCatalog: readonly WorldDefinition[] = [
     description: 'นำโมเดลจริงเข้าฉากและทำให้โมเดล กล้อง และแอนิเมชันทำงานร่วมกัน',
     imageSrc: '/assets/planets/planet-03-integration.png',
     accent: '#a792c8',
-    travelColor: '#aeb3bf',
+    travelColors: ['#aeb3bf', '#6f687d', '#d2bea6'],
     lessons: [
       {
         id: 'model-loading',
