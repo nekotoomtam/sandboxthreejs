@@ -1499,7 +1499,7 @@ input[type='range'] {
   --lesson-accent: #d8ad73;
   --lesson-accent-bright: #f0c98f;
   --lesson-ink: #f4f0e8;
-  --lesson-muted: rgba(228, 223, 214, 0.58);
+  --lesson-muted: rgba(238, 233, 224, 0.72);
   --lesson-line: rgba(223, 210, 191, 0.16);
   position: relative;
   min-height: 100svh;
@@ -1582,7 +1582,7 @@ input[type='range'] {
   display: inline-flex;
   align-items: center;
   gap: 0.7rem;
-  color: rgba(244, 240, 232, 0.62);
+  color: rgba(244, 240, 232, 0.76);
   font-size: 0.78rem;
   font-weight: 750;
   text-decoration: none;
@@ -1602,7 +1602,7 @@ input[type='range'] {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  color: rgba(244, 240, 232, 0.42);
+  color: rgba(244, 240, 232, 0.58);
   font-size: 0.65rem;
   font-weight: 800;
   letter-spacing: 0.16em;
@@ -1718,7 +1718,7 @@ input[type='range'] {
   padding: 0.4rem 0.7rem;
   border: 1px solid rgba(232, 220, 201, 0.12);
   border-radius: 999px;
-  color: rgba(244, 240, 232, 0.65);
+  color: rgba(244, 240, 232, 0.76);
   font-size: 0.68rem;
   font-weight: 750;
   background: rgba(255, 255, 255, 0.035);
@@ -1761,7 +1761,7 @@ input[type='range'] {
 .lesson-briefing__goals li {
   display: flex;
   gap: 0.7rem;
-  color: rgba(244, 240, 232, 0.62);
+  color: rgba(244, 240, 232, 0.76);
   font-size: 0.78rem;
   line-height: 1.55;
 }
@@ -1919,7 +1919,7 @@ input[type='range'] {
 
 .lesson-briefing__preview p {
   margin: 0.8rem 0 0;
-  color: rgba(244, 240, 232, 0.42);
+  color: rgba(244, 240, 232, 0.62);
   font-size: 0.68rem;
 }
 
@@ -2055,6 +2055,7 @@ input[type='range'] {
 
 .lesson-lab__guide h2 {
   margin: 0;
+  color: #f1ede6;
   font-size: 0.86rem;
 }
 
@@ -2062,7 +2063,7 @@ input[type='range'] {
   display: -webkit-box;
   overflow: hidden;
   margin: 0.35rem 0 0;
-  color: rgba(232, 229, 223, 0.47);
+  color: rgba(238, 234, 226, 0.68);
   font-size: 0.68rem;
   line-height: 1.55;
   -webkit-box-orient: vertical;
@@ -2080,7 +2081,7 @@ input[type='range'] {
   padding: 0.25rem 0.45rem;
   border: 1px solid rgba(215, 177, 126, 0.16);
   border-radius: 0.4rem;
-  color: rgba(237, 202, 152, 0.72);
+  color: rgba(246, 214, 168, 0.88);
   font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
   font-size: 0.55rem;
   text-decoration: none;
@@ -2103,6 +2104,23 @@ input[type='range'] {
   background: #17181e;
 }
 
+.lesson-lab .sandbox-workspace--practical > div:first-child > div:first-child > span:nth-child(2) {
+  color: #a8d4c5;
+}
+
+.lesson-lab .sandbox-workspace--practical > div:first-child > div:first-child > span:nth-child(3) {
+  color: #4e5d58;
+}
+
+.lesson-lab .sandbox-workspace--practical > div:first-child > div:last-child > span {
+  color: rgba(235, 231, 223, 0.62);
+}
+
+.lesson-lab .sandbox-workspace--practical > div:first-child > div:last-child > button {
+  border-color: rgba(235, 231, 223, 0.24);
+  color: rgba(244, 240, 232, 0.78);
+}
+
 .lesson-lab .sandbox-workspace--practical .lesson-code-pane {
   border-color: rgba(255, 255, 255, 0.08);
   background: #111217;
@@ -2121,13 +2139,17 @@ input[type='range'] {
   color: #efe9df;
 }
 
-.lesson-lab .lesson-code-lab p {
-  color: rgba(232, 229, 223, 0.58);
+.lesson-lab .lesson-code-lab > div:first-child > p {
+  color: rgba(238, 234, 226, 0.74);
 }
 
 .lesson-lab .lesson-code-lab code {
-  color: #d5c7b5;
+  color: #ead8bf;
   background: rgba(255, 255, 255, 0.06);
+}
+
+.lesson-lab .lesson-code-lab > div:last-child > button:last-child {
+  color: #9bcbb9;
 }
 
 .lesson-lab .lesson-code-lab .cm-editor {
